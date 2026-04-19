@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-zinc-50: #fafafa;
+  --color-zinc-900: #18181b;
+}
+
+body {
+  @apply bg-zinc-50 text-zinc-900 antialiased;
+}

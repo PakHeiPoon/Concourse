@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.pyc
+
+# Environment variables (NEVER commit)
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# IDE
+.vscode/
+.idea/
+.trae/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Hardhat / Solidity
+contracts/cache/
+contracts/artifacts/
+
+# Seed scripts (contain mock data, not for prod)
+backend/scripts/seed_merchants.py
+
+# SQL scripts (manual DB setup)
+backend/sql/
+
+# Lock files (optional — uncomment if you want to track them)
+# package-lock.json
+
+# Raw design docs (internal only)
+raw/
