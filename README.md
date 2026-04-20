@@ -1,160 +1,283 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/0G_Network-Powered-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIi8+PHRleHQgeD0iNyIgeT0iMTYiIGZvbnQtc2l6ZT0iMTIiIGZpbGw9IndoaXRlIj4wRzwvdGV4dD48L3N2Zz4=" alt="0G Network" />
-  <img src="https://img.shields.io/github/stars/PakHeiPoon/TourSkill?style=for-the-badge&color=yellow" alt="Stars" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
-  <img src="https://img.shields.io/badge/Hackathon-0G_APAC-orange?style=for-the-badge" alt="Hackathon" />
-</p>
-
-<h1 align="center">TourSkill</h1>
-
-<p align="center">
-  <strong>Decentralized AI Yellow Pages for Tourism on 0G Network</strong>
+  <img src="docs/images/tourskill-banner.svg" alt="TourSkill Banner" width="800" />
 </p>
 
 <p align="center">
-  <a href="#-english">English</a> | <a href="#-中文">中文</a>
+  <strong>Breaking the OTA Monopoly — Agent-to-Agent Tourism, Powered by You</strong>
+</p>
+
+<p align="center">
+  <a href="#-the-problem"><img src="https://img.shields.io/badge/Why-Read_the_Story-blue?style=for-the-badge" alt="Story" /></a>
+  <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
+  <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文文档-点击查看-orange?style=for-the-badge" alt="中文" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" /></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/PakHeiPoon/TourSkill?style=social" alt="Stars" />
+  <img src="https://img.shields.io/github/forks/PakHeiPoon/TourSkill?style=social" alt="Forks" />
+  <img src="https://img.shields.io/github/last-commit/PakHeiPoon/TourSkill" alt="Last Commit" />
 </p>
 
 ---
 
-## [EN] English
+## Table of Contents
 
-### What is TourSkill?
+- [The Problem](#-the-problem)
+- [The Vision](#-the-vision)
+- [How It Works](#-how-it-works)
+- [Architecture](#-architecture)
+- [Key Features](#-key-features)
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Tech Stack](#-tech-stack)
+- [Roadmap](#-roadmap)
+- [Star History](#-star-history)
+- [License](#-license)
 
-TourSkill is a **decentralized AI-powered tourism merchant registry** built on the [0G Network](https://0g.ai). It combines on-chain merchant identity (ERC-8004 inspired), an MCP (Model Context Protocol) gateway, and 0G Compute Network LLM inference to create a fully decentralized "AI Yellow Pages" for tourism.
+---
 
-**Users connect their own MetaMask wallet and use their own 0G tokens to power AI agent queries** — no centralized API keys, no platform intermediaries.
+## The Problem
 
-### Architecture
-
-```
-                                 TourSkill Architecture
- ┌──────────────────────────────────────────────────────────────────────┐
- │                         USER (Browser + MetaMask)                    │
- │                                                                      │
- │  ┌─────────────┐    ┌─────────────────┐    ┌──────────────────────┐ │
- │  │ Registration │    │   Explorer       │    │   Agent Demo         │ │
- │  │   Portal     │    │   (Browse &      │    │   (AI Chat with     │ │
- │  │   (Register  │    │    Test Skills)  │    │    Tool Calling)    │ │
- │  │   Merchant)  │    │                  │    │                      │ │
- │  └──────┬───────┘    └────────┬─────────┘    └──────────┬───────────┘ │
- └─────────┼─────────────────────┼─────────────────────────┼────────────┘
-           │                     │                         │
-           ▼                     ▼                         ▼
- ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────────┐
- │  0G Chain        │   │  MCP Gateway     │   │  0G Compute Network     │
- │  (Solidity)      │   │  (FastAPI)       │   │  (Decentralized LLM)   │
- │                  │   │                  │   │                         │
- │  MerchantRegistry│   │  /mcp/tools/*    │   │  qwen/GLM/DeepSeek     │
- │  .sol            │   │  discover        │   │  via @0glabs/broker    │
- │                  │   │  invoke_skill    │   │                         │
- │  - register()   │   │  get_details     │   │  User's wallet pays    │
- │  - getMerchant()│   │                  │   │  for inference          │
- │  - listByType() │   │  ┌────────────┐  │   │                         │
- │                  │   │  │  Supabase  │  │   │  ┌─────────────────┐   │
- │  Deployed on     │   │  │  (DB)      │  │   │  │ Tool Calling    │   │
- │  0G Testnet      │   │  └────────────┘  │   │  │ Loop (max 8)    │   │
- └─────────────────┘   └─────────────────┘   │  └────────┬────────┘   │
-                                               │           │            │
-                                               │           ▼            │
-                                               │  MCP Gateway ──────►  │
-                                               │  (execute tools)       │
-                                               └─────────────────────────┘
-```
-
-### Workflow
+### Today: You Don't Control Your Travel Experience
 
 ```
- User asks: "Find me restaurants in Hangzhou"
-      │
-      ▼
- ┌─────────────────────────────────────────┐
- │ 1. Connect MetaMask to 0G Network       │
- │    (Testnet or Mainnet)                 │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 2. Create Ledger & Transfer Funds       │
- │    (Auto: 3 0G deposit + 2 0G to       │
- │     provider if needed)                 │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 3. Send query to 0G Compute LLM        │
- │    (User's tokens pay for inference)    │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 4. LLM decides to call tools:           │
- │    → discover_merchants(hangzhou,        │
- │      restaurant)                        │
- │    → invoke_merchant_skill(get_menu)    │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 5. MCP Gateway executes tools against   │
- │    Supabase + returns results to LLM   │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 6. LLM generates final response with   │
- │    real merchant data, menus, prices    │
- └─────────────────────────────────────────┘
+    YOU (Traveler)                          MERCHANT (Hotel/Restaurant)
+         |                                          |
+         |    "I want a lakeside hotel              |
+         |     in Hangzhou for ¥800/night"           |
+         |                                          |
+         ▼                                          |
+  ┌─────────────────────────────────┐               |
+  │                                 │               |
+  │      OTA Platform               │               |
+  │      (Ctrip / Booking / Trip)   │               |
+  │                                 │               |
+  │   - Controls what you see       │               |
+  │   - Ranks by commission, not    │               |
+  │     quality                     │               |
+  │   - Hides direct prices         │               |
+  │   - Takes 15-25% commission     │               |
+  │   - Owns YOUR data              │               |
+  │   - "Coupons" = price control   │               |
+  │                                 │               |
+  └────────────────┬────────────────┘               |
+                   |                                |
+                   ▼                                |
+            You see ¥1,200                   They get ¥900
+            (platform markup)                (after commission)
 ```
 
-### Key Features
+**The illusion of choice:** Merchants appear to set their own prices, but platforms control discovery, ranking, and the coupon ecosystem. A hotel's ¥800 room becomes ¥1,200 after platform fees — then a "¥200 coupon" makes you feel like you got a deal at ¥1,000. The merchant still only receives ¥900.
+
+> *"We invented the internet to connect people directly. Then we built platforms that sit between every connection and extract rent."*
+
+---
+
+## The Vision
+
+### Tomorrow: Your Agent Talks to Their Agent
+
+Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transactions without a trusted third party* — TourSkill applies the same principle to travel commerce:
+
+```
+  ┌─────────────────┐                    ┌─────────────────┐
+  │                 │                    │                 │
+  │  YOUR PERSONAL  │   Direct Agent    │   MERCHANT      │
+  │  AI AGENT       │◄──────────────────►│   AI AGENT      │
+  │                 │   Communication    │                 │
+  │  - Your wallet  │                    │  - Their skills │
+  │  - Your prefs   │   ┌──────────┐    │  - Their prices │
+  │  - Your budget  │   │TourSkill │    │  - Their rules  │
+  │                 │   │Registry  │    │                 │
+  │  Understands:   │──►│(On-Chain)│◄───│  Publishes:     │
+  │  "I have a      │   │          │    │  - Real menus   │
+  │   stomach ache, │   │ Discover │    │  - True rates   │
+  │   need mild     │   │ Verify   │    │  - Availability │
+  │   food, bring   │   │ Connect  │    │  - Direct price │
+  │   my dog"       │   └──────────┘    │    (no markup)  │
+  │                 │                    │                 │
+  └─────────────────┘                    └─────────────────┘
+          |                                       |
+          └───────────────┬───────────────────────┘
+                          |
+                          ▼
+                   ┌──────────────┐
+                   │  Direct P2P  │
+                   │  Payment     │
+                   │  (Future:    │
+                   │   x402)      │
+                   └──────────────┘
+
+              No commission. No markup.
+              No data harvesting. No ranking manipulation.
+              Just agents serving humans.
+```
+
+**TourSkill is the decentralized registry that makes this possible** — an open, verifiable "Yellow Pages" where merchants publish their skills (menus, availability, booking) and any AI agent can discover and interact with them directly.
+
+### The Journey: From Platform Dependency to Agent Freedom
+
+```
+  PAST                    PRESENT                  FUTURE
+  ━━━━                    ━━━━━━━                  ━━━━━━
+
+  Phone Book              OTA Platforms             TourSkill
+  (Yellow Pages)          (Ctrip, Booking)          (Agent Yellow Pages)
+       │                       │                         │
+  Human reads             Human browses              Agent discovers
+  phone numbers           curated listings           verified merchants
+       │                       │                         │
+  Human calls             Human clicks               Agent invokes
+  merchant directly       "Book Now"                 merchant skills
+       │                       │                         │
+  Negotiates              Pays platform              Agent negotiates
+  price directly          markup price               directly with
+       │                       │                    merchant agent
+       │                       │                         │
+  Pays merchant           Platform takes             Peer-to-peer
+  directly                15-25% cut                 payment (x402)
+       │                       │                         │
+  ✓ Direct                ✗ Intermediated             ✓ Direct
+  ✗ Not scalable          ✓ Scalable                  ✓ Scalable
+  ✗ No AI                 ✗ Platform lock-in          ✓ AI-native
+                          ✗ Data exploitation         ✓ User owns data
+```
+
+---
+
+## How It Works
+
+### User Flow
+
+```
+  ┌─────────────────────────────────────────────────────────────────┐
+  │                                                                 │
+  │  Step 1: Connect Wallet                                         │
+  │  ┌──────────────┐                                              │
+  │  │   MetaMask    │──► Choose Network (Testnet / Mainnet)       │
+  │  │   🦊          │──► Auto-create compute ledger if needed     │
+  │  └──────────────┘──► Smart balance check & top-up              │
+  │                                                                 │
+  │  Step 2: Ask Anything                                           │
+  │  ┌──────────────────────────────────────────────────────┐      │
+  │  │ "My stomach hurts, I'm visiting Hangzhou with my     │      │
+  │  │  dog. What mild food can you recommend?"              │      │
+  │  └──────────────────────────────────┬───────────────────┘      │
+  │                                     │                           │
+  │  Step 3: Agent Autonomously Acts    ▼                           │
+  │  ┌─────────────────────────────────────────────────────┐       │
+  │  │  LLM thinks → calls discover_merchants(hangzhou,    │       │
+  │  │  restaurant) → finds 4 restaurants → calls          │       │
+  │  │  get_menu() on each → filters for mild/non-spicy   │       │
+  │  │  dishes → checks pet-friendly options → calls       │       │
+  │  │  check_table_availability() → presents results     │       │
+  │  └─────────────────────────────────────────────────────┘       │
+  │                                                                 │
+  │  Step 4: Get Real Results                                       │
+  │  ┌──────────────────────────────────────────────────────┐      │
+  │  │  "I found 3 pet-friendly restaurants near West Lake: │      │
+  │  │   1. Grandma's Kitchen — steamed tofu soup ¥28      │      │
+  │  │   2. Green Tea Restaurant — congee set ¥35          │      │
+  │  │   Want me to reserve a table?"                       │      │
+  │  └──────────────────────────────────────────────────────┘      │
+  │                                                                 │
+  └─────────────────────────────────────────────────────────────────┘
+
+  All powered by YOUR wallet. YOUR tokens. No API key. No platform.
+```
+
+---
+
+## Architecture
+
+```
+                           ┌─────────────────────────────────┐
+                           │        Frontend (React)          │
+                           │                                  │
+                           │  ┌────────┐ ┌──────┐ ┌───────┐ │
+                           │  │Register│ │Browse│ │Agent  │ │
+                           │  │Portal  │ │& Test│ │Demo   │ │
+                           │  └───┬────┘ └──┬───┘ └───┬───┘ │
+                           │      │         │         │      │
+                           └──────┼─────────┼─────────┼──────┘
+                                  │         │         │
+                    ┌─────────────┘         │         └──────────────┐
+                    │                       │                        │
+                    ▼                       ▼                        ▼
+          ┌─────────────────┐    ┌──────────────────┐   ┌───────────────────┐
+          │  Smart Contract  │    │  MCP Gateway      │   │ Decentralized LLM │
+          │  (0G Chain)      │    │  (FastAPI)         │   │ (0G Compute)      │
+          │                  │    │                    │   │                   │
+          │  MerchantRegistry│    │  3 MCP Tools:      │   │ Models:           │
+          │  .sol            │    │  - discover        │   │ - Qwen            │
+          │                  │    │  - invoke_skill    │   │ - GLM             │
+          │  On-chain:       │    │  - get_details     │   │ - DeepSeek        │
+          │  - DID           │    │                    │   │                   │
+          │  - Profile Hash  │    │  12 Skill Handlers │   │ Tool Calling Loop │
+          │  - Skill Endpoint│    │  (menu, booking,   │   │ (up to 8 rounds)  │
+          │                  │    │   tickets, etc.)   │   │                   │
+          └─────────────────┘    │                    │   │ processResponse() │
+                                  │  ┌──────────────┐ │   │ fee settlement    │
+                                  │  │  Supabase DB │ │   │                   │
+                                  │  └──────────────┘ │   └───────────────────┘
+                                  └──────────────────┘
+```
+
+### Merchant Skill System
+
+TourSkill merchants publish **executable skills** — not just static listings. Any AI agent can invoke these:
+
+| Category | Skills | Description |
+|----------|--------|-------------|
+| **Restaurant** | `get_menu`, `reserve_table`, `check_table_availability`, `get_dietary_options` | Real menus with prices, dietary tags, allergens |
+| **Hotel** | `check_availability`, `get_rates`, `create_booking`, `get_cancellation_policy` | Room types, dynamic pricing, cancellation rules |
+| **Attraction** | `check_ticket_inventory`, `get_opening_hours`, `purchase_ticket`, `get_visitor_guide` | Time slots, combo tickets, transport info |
+
+---
+
+## Key Features
 
 | Feature | Description |
 |---------|-------------|
-| **On-Chain Registry** | Merchants register via `MerchantRegistry.sol` on 0G Chain with profile hash verification |
-| **MCP Gateway** | Model Context Protocol server exposing `discover_merchants`, `invoke_merchant_skill`, `get_merchant_details` |
-| **0G Compute LLM** | Decentralized AI inference — users pay with their own 0G tokens via MetaMask |
-| **Network Selection** | Switch between 0G Testnet (Galileo) and Mainnet with automatic chain switching |
-| **Auto Funding** | Smart balance detection — only deposits/transfers when locked balance is insufficient |
-| **Skill System** | 12 merchant skills: `get_menu`, `reserve_table`, `check_availability`, `purchase_ticket`, etc. |
-| **Tool Calling Loop** | LLM autonomously decides which MCP tools to call (up to 8 iterations) |
-| **Real-time Logs** | Terminal panel shows every tool call, result, and LLM interaction live |
+| **Decentralized Registry** | On-chain merchant identity with profile hash verification |
+| **MCP Protocol** | Standard tool interface — any AI agent can connect |
+| **User-Powered AI** | Your wallet pays for LLM inference — no centralized API keys |
+| **Network Selection** | Switch between Testnet and Mainnet with auto chain config |
+| **Smart Funding** | Auto-detect balance, only deposit/transfer when insufficient |
+| **12 Merchant Skills** | Real executable APIs: menus, bookings, tickets, guides |
+| **Autonomous Agent** | LLM decides which tools to call (up to 8 iterations) |
+| **Real-time Logs** | Live terminal showing every tool call and result |
+| **Multi-city Data** | Hangzhou, Shanghai, Suzhou, Beijing — 29 real merchants |
 
-### Tech Stack
+---
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19 + TypeScript + Vite + Tailwind CSS |
-| **Smart Contract** | Solidity 0.8.24 + Hardhat 3 on 0G Chain |
-| **Backend** | FastAPI (Python) + Supabase |
-| **AI Compute** | 0G Compute Network + `@0glabs/0g-serving-broker` |
-| **Protocol** | MCP (Model Context Protocol) for tool invocation |
-| **Wallet** | MetaMask + ethers.js v6 |
+## Quick Start
 
-### Quick Start
+### Prerequisites
 
-#### Prerequisites
-
-- Node.js 18+
-- Python 3.10+
+- Node.js 18+ / Python 3.10+
 - MetaMask browser extension
-- 0G Testnet tokens ([faucet](https://faucet.0g.ai))
+- Testnet tokens ([faucet](https://faucet.0g.ai))
 
-#### 1. Clone & Install
+### 1. Clone
 
 ```bash
 git clone https://github.com/PakHeiPoon/TourSkill.git
 cd TourSkill
 ```
 
-#### 2. Backend (MCP Gateway)
+### 2. Backend (MCP Gateway)
 
 ```bash
 cd backend
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env
-# Edit .env with your Supabase credentials
+cp .env.example .env    # Edit with your Supabase credentials
 uvicorn app.main:app --reload --port 8000
 ```
 
-#### 3. Frontend
+### 3. Frontend
 
 ```bash
 cd frontend
@@ -162,211 +285,94 @@ npm install
 npm run dev
 ```
 
-#### 4. Smart Contract (Optional — already deployed)
+### 4. Smart Contract (Optional — already deployed)
 
 ```bash
 cd contracts
 npm install
-cp .env.example .env
-# Edit .env with your deployer private key
+cp .env.example .env    # Edit with your deployer private key
 npx hardhat run scripts/deploy.js --network zerog_testnet
 ```
 
-**Deployed Contract:** `0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543` on [0G Testnet](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543)
+> **Deployed Contract:** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543)
 
-### Project Structure
+---
+
+## Project Structure
 
 ```
 TourSkill/
-├── frontend/              # React + Vite frontend
-│   ├── src/
-│   │   ├── pages/
-│   │   │   ├── RegistrationPortal.tsx   # Merchant registration
-│   │   │   ├── Explorer.tsx             # Browse & test skills
-│   │   │   └── AgentDemo.tsx            # AI agent chat
-│   │   ├── hooks/
-│   │   │   └── use0gCompute.ts          # 0G Compute hook
-│   │   └── contracts/
-│   │       └── MerchantRegistry.ts      # Contract ABI
-│   └── vite.config.ts
-├── backend/               # FastAPI MCP Gateway
-│   ├── app/
-│   │   ├── routers/mcp.py              # MCP tool endpoints
-│   │   ├── services/
-│   │   │   ├── merchant_service.py      # Supabase queries
-│   │   │   └── skill_service.py         # Skill execution (12 skills)
-│   │   └── db/supabase_client.py
+├── frontend/                    # React + Vite + Tailwind
+│   ├── src/pages/
+│   │   ├── RegistrationPortal.tsx    # Merchant onboarding
+│   │   ├── Explorer.tsx              # Browse & test merchant skills
+│   │   └── AgentDemo.tsx             # AI agent chat interface
+│   ├── src/hooks/
+│   │   └── use0gCompute.ts           # Decentralized LLM hook
+│   └── src/contracts/
+│       └── MerchantRegistry.ts       # On-chain contract ABI
+├── backend/                     # FastAPI MCP Gateway
+│   ├── app/routers/mcp.py           # MCP tool endpoints
+│   ├── app/services/
+│   │   ├── merchant_service.py       # Discovery & lookup
+│   │   └── skill_service.py          # 12 skill handlers
 │   └── requirements.txt
-├── contracts/             # Solidity smart contracts
+├── contracts/                   # Solidity (Hardhat 3)
 │   ├── contracts/MerchantRegistry.sol
-│   ├── scripts/deploy.js
-│   └── hardhat.config.js
-└── agent/                 # (Optional) Server-side agent
+│   └── scripts/deploy.js
+└── agent/                       # Optional server-side agent
     └── server.js
 ```
 
-### Screenshots
+---
 
-> Coming soon — see the live demo!
+## Tech Stack
 
-### License
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19 + TypeScript + Vite + Tailwind CSS |
+| Smart Contract | Solidity 0.8.24 + Hardhat 3 |
+| Backend | FastAPI + Supabase |
+| AI Inference | 0G Compute Network + `@0glabs/0g-serving-broker` |
+| Protocol | MCP (Model Context Protocol) |
+| Wallet | MetaMask + ethers.js v6 |
+| Chain | 0G Network (Testnet & Mainnet) |
+
+---
+
+## Roadmap
+
+| Phase | Status | Description |
+|-------|--------|-------------|
+| **MVP** | Done | Registry + MCP Gateway + Agent Demo with decentralized LLM |
+| **Multi-Agent** | Planned | Merchant-side agents that negotiate with user agents |
+| **x402 Payments** | Planned | HTTP-native peer-to-peer payments between agents |
+| **Reputation** | Planned | On-chain reviews and trust scoring |
+| **Multi-Chain** | Planned | Deploy registry on multiple chains |
+| **Mobile** | Planned | Mobile agent with voice interaction |
+
+---
+
+## Star History
+
+<div align="center">
+  <a href="https://star-history.com/#PakHeiPoon/TourSkill&Date">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date&theme=dark" />
+      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date" />
+      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PakHeiPoon/TourSkill&type=Date" width="700" />
+    </picture>
+  </a>
+</div>
+
+---
+
+## License
 
 MIT
 
 ---
 
-## [ZH] 中文
-
-### TourSkill 是什么？
-
-TourSkill 是一个基于 [0G Network](https://0g.ai) 构建的**去中心化 AI 旅游商家注册表**。它结合了链上商家身份（受 ERC-8004 启发）、MCP（模型上下文协议）网关和 0G 计算网络 LLM 推理，打造了一个完全去中心化的"AI 旅游黄页"。
-
-**用户使用自己的 MetaMask 钱包连接，用自己的 0G 代币驱动 AI 智能体查询** —— 无需中心化 API 密钥，无需平台中间商。
-
-### 架构概览
-
-```
-                              TourSkill 架构
- ┌──────────────────────────────────────────────────────────────────────┐
- │                       用户（浏览器 + MetaMask）                       │
- │                                                                      │
- │  ┌─────────────┐    ┌─────────────────┐    ┌──────────────────────┐ │
- │  │  商家注册     │    │   商家浏览器      │    │   AI 智能体演示      │ │
- │  │  Portal      │    │   Explorer       │    │   Agent Demo         │ │
- │  └──────┬───────┘    └────────┬─────────┘    └──────────┬───────────┘ │
- └─────────┼─────────────────────┼─────────────────────────┼────────────┘
-           │                     │                         │
-           ▼                     ▼                         ▼
- ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────────────┐
- │  0G Chain        │   │  MCP 网关        │   │  0G 计算网络            │
- │  (智能合约)      │   │  (FastAPI)       │   │  (去中心化 LLM)        │
- │                  │   │                  │   │                         │
- │  商家注册合约     │   │  发现商家         │   │  qwen / GLM / DeepSeek │
- │                  │   │  调用技能         │   │  用户钱包付费推理       │
- │  已部署在         │   │  查询详情         │   │                         │
- │  0G 测试网       │   │                  │   │  Tool Calling 循环     │
- └─────────────────┘   └─────────────────┘   └─────────────────────────┘
-```
-
-### 工作流程
-
-```
- 用户提问："帮我找杭州的餐厅"
-      │
-      ▼
- ┌─────────────────────────────────────────┐
- │ 1. MetaMask 连接 0G 网络                 │
- │    （支持测试网 / 主网切换）              │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 2. 自动创建账本 & 转账                   │
- │    （存入 3 0G + 向 Provider 转 2 0G）  │
- │    余额充足时自动跳过                    │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 3. 发送查询到 0G 计算网络 LLM            │
- │    （用户自己的代币支付推理费用）          │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 4. LLM 自主决定调用工具：                │
- │    → discover_merchants(杭州, 餐厅)     │
- │    → invoke_merchant_skill(get_menu)    │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 5. MCP 网关执行工具，查询 Supabase       │
- │    返回真实商家数据给 LLM               │
- └──────────────────┬──────────────────────┘
-                    ▼
- ┌─────────────────────────────────────────┐
- │ 6. LLM 生成最终回复                      │
- │    包含真实菜单、价格、可用性等信息       │
- └─────────────────────────────────────────┘
-```
-
-### 核心特性
-
-| 特性 | 说明 |
-|------|------|
-| **链上注册** | 商家通过 `MerchantRegistry.sol` 在 0G Chain 上注册，Profile Hash 验证 |
-| **MCP 网关** | 模型上下文协议服务器，提供 `discover_merchants`、`invoke_merchant_skill`、`get_merchant_details` |
-| **0G 计算 LLM** | 去中心化 AI 推理 —— 用户用自己的 0G 代币通过 MetaMask 付费 |
-| **网络选择** | 支持 0G 测试网（Galileo）和主网切换，自动添加链配置 |
-| **智能充值** | 智能检测余额 —— 仅在 locked balance 不足时才触发存款/转账 |
-| **技能系统** | 12 种商家技能：获取菜单、预订桌位、查询可用性、购买门票等 |
-| **工具调用循环** | LLM 自主决定调用哪些 MCP 工具（最多 8 轮迭代） |
-| **实时日志** | 终端面板实时展示每个工具调用、返回结果和 LLM 交互 |
-
-### 技术栈
-
-| 层级 | 技术 |
-|------|------|
-| **前端** | React 19 + TypeScript + Vite + Tailwind CSS |
-| **智能合约** | Solidity 0.8.24 + Hardhat 3（0G Chain） |
-| **后端** | FastAPI (Python) + Supabase |
-| **AI 计算** | 0G 计算网络 + `@0glabs/0g-serving-broker` |
-| **协议** | MCP（模型上下文协议） |
-| **钱包** | MetaMask + ethers.js v6 |
-
-### 快速开始
-
-#### 前置要求
-
-- Node.js 18+
-- Python 3.10+
-- MetaMask 浏览器插件
-- 0G 测试网代币（[水龙头](https://faucet.0g.ai)）
-
-#### 1. 克隆仓库
-
-```bash
-git clone https://github.com/PakHeiPoon/TourSkill.git
-cd TourSkill
-```
-
-#### 2. 启动后端（MCP 网关）
-
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# 编辑 .env 填入你的 Supabase 凭证
-uvicorn app.main:app --reload --port 8000
-```
-
-#### 3. 启动前端
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-#### 4. 部署智能合约（可选 —— 已部署）
-
-```bash
-cd contracts
-npm install
-cp .env.example .env
-# 编辑 .env 填入你的部署私钥
-npx hardhat run scripts/deploy.js --network zerog_testnet
-```
-
-**已部署合约：** `0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`（[0G 测试网浏览器](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543)）
-
-### 致谢
-
-- [0G Network](https://0g.ai) — 去中心化 AI 操作系统
-- [0G APAC Hackathon](https://0g.ai) — 黑客松支持
-- [Supabase](https://supabase.com) — 数据库服务
-
----
-
 <p align="center">
-  <strong>Built with 0G Network for the 0G APAC Hackathon 2025</strong>
+  <sub>TourSkill — Because your next trip should be between you and the merchant, not you and a platform.</sub>
 </p>
