@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="./README.md"><img src="https://img.shields.io/badge/English-Click_Here-blue?style=for-the-badge" alt="English" /></a>
-  <a href="#-快速开始"><img src="https://img.shields.io/badge/快速开始-5分钟-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
+  <a href="#快速开始"><img src="https://img.shields.io/badge/快速开始-5分钟-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" /></a>
 </p>
 
@@ -22,16 +22,16 @@
 
 ## 目录
 
-- [问题：为什么需要 TourSkill？](#-问题为什么需要-tourskill)
-- [愿景：智能体直接对话](#-愿景智能体直接对话)
-- [工作流程](#-工作流程)
-- [系统架构](#-系统架构)
-- [核心特性](#-核心特性)
-- [快速开始](#-快速开始)
-- [项目结构](#-项目结构)
-- [技术栈](#-技术栈)
-- [路线图](#-路线图)
-- [Star History](#-star-history)
+- [问题：为什么需要 TourSkill？](#问题为什么需要-tourskill)
+- [愿景：智能体直接对话](#愿景智能体直接对话)
+- [工作流程](#工作流程)
+- [系统架构](#系统架构)
+- [核心特性](#核心特性)
+- [快速开始](#快速开始)
+- [项目结构](#项目结构)
+- [技术栈](#技术栈)
+- [路线图](#路线图)
+- [Star History](#star-history)
 
 ---
 

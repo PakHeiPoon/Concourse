@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-  <a href="#-the-problem"><img src="https://img.shields.io/badge/Why-Read_the_Story-blue?style=for-the-badge" alt="Story" /></a>
-  <a href="#-quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
+  <a href="#the-problem"><img src="https://img.shields.io/badge/Why-Read_the_Story-blue?style=for-the-badge" alt="Story" /></a>
+  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
   <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文文档-点击查看-orange?style=for-the-badge" alt="中文" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" /></a>
 </p>
@@ -23,17 +23,17 @@
 
 ## Table of Contents
 
-- [The Problem](#-the-problem)
-- [The Vision](#-the-vision)
-- [How It Works](#-how-it-works)
-- [Architecture](#-architecture)
-- [Key Features](#-key-features)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
-- [Tech Stack](#-tech-stack)
-- [Roadmap](#-roadmap)
-- [Star History](#-star-history)
-- [License](#-license)
+- [The Problem](#the-problem)
+- [The Vision](#the-vision)
+- [How It Works](#how-it-works)
+- [Architecture](#architecture)
+- [Key Features](#key-features)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Tech Stack](#tech-stack)
+- [Roadmap](#roadmap)
+- [Star History](#star-history)
+- [License](#license)
 
 ---
 
