@@ -41,33 +41,9 @@
 
 ### Today: You Don't Control Your Travel Experience
 
-```
-    YOU (Traveler)                          MERCHANT (Hotel/Restaurant)
-         |                                          |
-         |    "I want a lakeside hotel              |
-         |     in Hangzhou for ¥800/night"           |
-         |                                          |
-         ▼                                          |
-  ┌─────────────────────────────────┐               |
-  │                                 │               |
-  │      OTA Platform               │               |
-  │      (Ctrip / Booking / Trip)   │               |
-  │                                 │               |
-  │   - Controls what you see       │               |
-  │   - Ranks by commission, not    │               |
-  │     quality                     │               |
-  │   - Hides direct prices         │               |
-  │   - Takes 15-25% commission     │               |
-  │   - Owns YOUR data              │               |
-  │   - "Coupons" = price control   │               |
-  │                                 │               |
-  └────────────────┬────────────────┘               |
-                   |                                |
-                   ▼                                |
-            You see ¥1,200                   They get ¥900
-            (platform markup)                (after commission)
-```
-
+<p align="center">
+  <img src="docs/images/tourskill-problem-today.png" alt="Today: you don't control your travel experience" width="900" />
+</p>
 **The illusion of choice:** Merchants appear to set their own prices, but platforms control discovery, ranking, and the coupon ecosystem. A hotel's ¥800 room becomes ¥1,200 after platform fees — then a "¥200 coupon" makes you feel like you got a deal at ¥1,000. The merchant still only receives ¥900.
 
 > *"We invented the internet to connect people directly. Then we built platforms that sit between every connection and extract rent."*
@@ -88,33 +64,12 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 
 ### The Journey: From Platform Dependency to Agent Freedom
 
-```
-  PAST                    PRESENT                  FUTURE
-  ━━━━                    ━━━━━━━                  ━━━━━━
-
-  Phone Book              OTA Platforms             TourSkill
-  (Yellow Pages)          (Ctrip, Booking)          (Agent Yellow Pages)
-       │                       │                         │
-  Human reads             Human browses              Agent discovers
-  phone numbers           curated listings           verified merchants
-       │                       │                         │
-  Human calls             Human clicks               Agent invokes
-  merchant directly       "Book Now"                 merchant skills
-       │                       │                         │
-  Negotiates              Pays platform              Agent negotiates
-  price directly          markup price               directly with
-       │                       │                    merchant agent
-       │                       │                         │
-  Pays merchant           Platform takes             Peer-to-peer
-  directly                15-25% cut                 payment (x402)
-       │                       │                         │
-  ✓ Direct                ✗ Intermediated             ✓ Direct
-  ✗ Not scalable          ✓ Scalable                  ✓ Scalable
-  ✗ No AI                 ✗ Platform lock-in          ✓ AI-native
-                          ✗ Data exploitation         ✓ User owns data
-```
-
+<p align="center">
+  <img src="docs/images/tourskill-journey.png" alt="The journey: from platform dependency to agent freedom" width="900" />
+</p>
 ---
+
+
 
 ## How It Works
 
