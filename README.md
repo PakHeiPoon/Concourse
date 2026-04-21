@@ -80,39 +80,9 @@
 
 Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transactions without a trusted third party* — TourSkill applies the same principle to travel commerce:
 
-```
-  ┌─────────────────┐                    ┌─────────────────┐
-  │                 │                    │                 │
-  │  YOUR PERSONAL  │   Direct Agent    │   MERCHANT      │
-  │  AI AGENT       │◄──────────────────►│   AI AGENT      │
-  │                 │   Communication    │                 │
-  │  - Your wallet  │                    │  - Their skills │
-  │  - Your prefs   │   ┌──────────┐    │  - Their prices │
-  │  - Your budget  │   │TourSkill │    │  - Their rules  │
-  │                 │   │Registry  │    │                 │
-  │  Understands:   │──►│(On-Chain)│◄───│  Publishes:     │
-  │  "I have a      │   │          │    │  - Real menus   │
-  │   stomach ache, │   │ Discover │    │  - True rates   │
-  │   need mild     │   │ Verify   │    │  - Availability │
-  │   food, bring   │   │ Connect  │    │  - Direct price │
-  │   my dog"       │   └──────────┘    │    (no markup)  │
-  │                 │                    │                 │
-  └─────────────────┘                    └─────────────────┘
-          |                                       |
-          └───────────────┬───────────────────────┘
-                          |
-                          ▼
-                   ┌──────────────┐
-                   │  Direct P2P  │
-                   │  Payment     │
-                   │  (Future:    │
-                   │   x402)      │
-                   └──────────────┘
-
-              No commission. No markup.
-              No data harvesting. No ranking manipulation.
-              Just agents serving humans.
-```
+<p align="center">
+  <img src="docs/images/tourskill-a2a-ecosystem.png" alt="TourSkill Agent-to-Agent (A2A) travel ecosystem" width="900" />
+</p>
 
 **TourSkill is the decentralized registry that makes this possible** — an open, verifiable "Yellow Pages" where merchants publish their skills (menus, availability, booking) and any AI agent can discover and interact with them directly.
 
@@ -150,42 +120,9 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
 
 ### User Flow
 
-```
-  ┌─────────────────────────────────────────────────────────────────┐
-  │                                                                 │
-  │  Step 1: Connect Wallet                                         │
-  │  ┌──────────────┐                                              │
-  │  │   MetaMask    │──► Choose Network (Testnet / Mainnet)       │
-  │  │   🦊          │──► Auto-create compute ledger if needed     │
-  │  └──────────────┘──► Smart balance check & top-up              │
-  │                                                                 │
-  │  Step 2: Ask Anything                                           │
-  │  ┌──────────────────────────────────────────────────────┐      │
-  │  │ "My stomach hurts, I'm visiting Hangzhou with my     │      │
-  │  │  dog. What mild food can you recommend?"              │      │
-  │  └──────────────────────────────────┬───────────────────┘      │
-  │                                     │                           │
-  │  Step 3: Agent Autonomously Acts    ▼                           │
-  │  ┌─────────────────────────────────────────────────────┐       │
-  │  │  LLM thinks → calls discover_merchants(hangzhou,    │       │
-  │  │  restaurant) → finds 4 restaurants → calls          │       │
-  │  │  get_menu() on each → filters for mild/non-spicy   │       │
-  │  │  dishes → checks pet-friendly options → calls       │       │
-  │  │  check_table_availability() → presents results     │       │
-  │  └─────────────────────────────────────────────────────┘       │
-  │                                                                 │
-  │  Step 4: Get Real Results                                       │
-  │  ┌──────────────────────────────────────────────────────┐      │
-  │  │  "I found 3 pet-friendly restaurants near West Lake: │      │
-  │  │   1. Grandma's Kitchen — steamed tofu soup ¥28      │      │
-  │  │   2. Green Tea Restaurant — congee set ¥35          │      │
-  │  │   Want me to reserve a table?"                       │      │
-  │  └──────────────────────────────────────────────────────┘      │
-  │                                                                 │
-  └─────────────────────────────────────────────────────────────────┘
-
-  All powered by YOUR wallet. YOUR tokens. No API key. No platform.
-```
+<p align="center">
+  <img src="docs/images/tourskill-feature-flow.png" alt="TourSkill feature flow: personalized AI dining" width="900" />
+</p>
 
 ---
 
