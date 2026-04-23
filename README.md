@@ -199,7 +199,28 @@ cp .env.example .env    # Edit with your deployer private key
 npx hardhat run scripts/deploy.js --network zerog_testnet
 ```
 
-> **Deployed Contract:** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543)
+> **Deployed Contract:** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543) (0G testnet, chainId `16602`) — already populated with 28 merchants across Hangzhou, Shanghai, Suzhou, Beijing.
+
+---
+
+## Agent Integration via SKILL.md
+
+TourSkill ships with a **client-side SKILL.md spec** that any AI agent (Claude Code, Cursor, custom agents) can install to discover and interact with the on-chain merchant registry.
+
+### Quick install
+
+Tell your personal agent:
+
+> "Install the TourSkill skill from `https://raw.githubusercontent.com/PakHeiPoon/TourSkill/main/skills/user-client/SKILL.md`"
+
+Once installed, the agent learns to:
+
+1. **Classify** tourism intent ("dinner in Hangzhou tomorrow") into structured form
+2. **Discover** merchants via the registry — already populated on-chain
+3. **Personalize** ranking using your own preferences (allergens, budget, history) — the core anti-OTA edge
+4. **Invoke** merchant skills (book a table, reserve a room, buy tickets) with on-chain proof
+
+See [`skills/user-client/SKILL.md`](skills/user-client/SKILL.md) for the full spec.
 
 ---
 
@@ -220,13 +241,15 @@ TourSkill/
 │   ├── app/routers/mcp.py           # MCP tool endpoints
 │   ├── app/services/
 │   │   ├── merchant_service.py       # Discovery & lookup
-│   │   └── skill_service.py          # 12 skill handlers
+│   │   └── skill_service.py          # 12 merchant-aware skill handlers
 │   └── requirements.txt
 ├── contracts/                   # Solidity (Hardhat 3)
 │   ├── contracts/MerchantRegistry.sol
 │   └── scripts/deploy.js
-└── agent/                       # Optional server-side agent
-    └── server.js
+├── agent/                       # Optional server-side agent
+│   └── server.js
+└── skills/                      # Client-side SKILL.md specs for personal agents
+    └── user-client/SKILL.md         # Discover → personalize → invoke loop
 ```
 
 ---

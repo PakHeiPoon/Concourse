@@ -191,7 +191,28 @@ cp .env.example .env    # 编辑填入部署私钥
 npx hardhat run scripts/deploy.js --network zerog_testnet
 ```
 
-> **已部署合约：** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543)
+> **已部署合约：** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543) （0G 测试网，chainId `16602`）—— 已注册 28 家覆盖杭州、上海、苏州、北京的真实商家。
+
+---
+
+## 通过 SKILL.md 接入个人 Agent
+
+TourSkill 提供一份**客户端 SKILL.md 规范**——任何 AI agent（Claude Code、Cursor、自定义 agent）都可以装载这套技能，发现并交互链上商家注册表。
+
+### 一键安装
+
+让你的个人 agent 装载：
+
+> "从 `https://raw.githubusercontent.com/PakHeiPoon/TourSkill/main/skills/user-client/SKILL.md` 安装 TourSkill 技能"
+
+装上之后 agent 会：
+
+1. **意图分类**：把"明天在杭州吃饭"抽成结构化字段
+2. **链上发现**：调注册表查相关商家——已部署在 0G 测试网
+3. **个性化重排序**：用你的偏好（过敏原、预算、历史）做二次排序——**这是反 OTA 算法的核心抓手**
+4. **调用商家技能**：订餐 / 订房 / 买票，全程带链上凭证
+
+完整规范见 [`skills/user-client/SKILL.md`](skills/user-client/SKILL.md)。
 
 ---
 
@@ -217,8 +238,10 @@ TourSkill/
 ├── contracts/                   # Solidity (Hardhat 3)
 │   ├── contracts/MerchantRegistry.sol
 │   └── scripts/deploy.js
-└── agent/                       # 可选的服务端智能体
-    └── server.js
+├── agent/                       # 可选的服务端智能体
+│   └── server.js
+└── skills/                      # 客户端 SKILL.md 规范（给个人 agent 装载）
+    └── user-client/SKILL.md         # 发现 → 个性化 → 调用 闭环
 ```
 
 ---
