@@ -211,7 +211,9 @@ TourSkill ships with a **client-side SKILL.md spec** that any AI agent (Claude C
 
 Tell your personal agent:
 
-> "Install the TourSkill skill from `https://raw.githubusercontent.com/PakHeiPoon/TourSkill/main/skills/user-client/SKILL.md`"
+> "Install the TourSkill skill from `https://backend-lilac-xi-18.vercel.app/skills/user-client/SKILL.md`"
+
+The SKILL.md is served directly by the public TourSkill gateway — same host as the API it describes. No GitHub access needed.
 
 Once installed, the agent learns to:
 
