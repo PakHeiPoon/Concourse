@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Store, CheckCircle2, ChevronRight, Loader2, ArrowRight, Wallet, Link2, FlaskConical } from 'lucide-react'
 import { BrowserProvider, Contract } from 'ethers'
 import { MERCHANT_REGISTRY_ABI, MERCHANT_REGISTRY_ADDRESS, ZERO_G_CHAIN } from '../contracts/MerchantRegistry'
+import { useT } from '../i18n'
 
 const SKILLS_BY_TYPE: Record<string, string> = {
   restaurant: 'get_menu,reserve_table,check_table_availability,get_dietary_options',
@@ -101,6 +102,7 @@ const MOCK_DATA: Record<string, Partial<FormState>> = {
 }
 
 export default function RegistrationPortal() {
+  const { t } = useT()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [chainLoading, setChainLoading] = useState(false)
@@ -312,10 +314,10 @@ export default function RegistrationPortal() {
           <Store className="w-8 h-8" />
         </div>
         <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
-          Merchant Registration
+          {t('register.title')}
         </h1>
         <p className="text-slate-500 mt-3 text-lg max-w-2xl mx-auto">
-          Join the decentralized AI Yellow Pages. Register your business on the 0G network and make your services available to global AI agents instantly.
+          {t('register.subtitle')}
         </p>
       </div>
 

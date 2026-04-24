@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Bot, Send, Terminal, Sparkles, CheckCircle2, Navigation, Activity, RotateCcw, Wallet, Loader2, AlertCircle } from 'lucide-react'
 import { use0gCompute, NETWORKS, type NetworkType } from '../hooks/use0gCompute'
+import { useT } from '../i18n'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -14,6 +15,7 @@ interface LogEntry {
 }
 
 export default function AgentDemo() {
+  const { t } = useT()
   const { ready, model, provider, network: connectedNetwork, error: computeError, loading: computeLoading, step, connect, chat } = use0gCompute()
 
   const [selectedNetwork, setSelectedNetwork] = useState<NetworkType>('testnet')
@@ -86,10 +88,10 @@ export default function AgentDemo() {
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
             <Bot className="w-8 h-8 text-indigo-600" />
-            Personal Agent Demo
+            {t('demoPage.title')}
           </h1>
           <p className="text-slate-500 mt-2 text-lg font-light">
-            Connect your wallet to use 0G Compute LLM — your tokens power the AI agent.
+            {t('demoPage.subtitle')}
           </p>
         </div>
         <button
@@ -97,7 +99,7 @@ export default function AgentDemo() {
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
         >
           <RotateCcw className="w-4 h-4" />
-          Reset
+          {t('demoPage.reset')}
         </button>
       </div>
 

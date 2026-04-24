@@ -98,6 +98,57 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'status.active': 'Open for business',
     'status.inactive': 'Paused',
 
+    // ─── Profile page ───
+    'profile.connectWallet.title': 'Connect your wallet',
+    'profile.connectWallet.body': 'Sign in with your wallet to view your TourSkill profile, manage your registered merchants, and connect your AI agent.',
+    'profile.connectWallet.hint': 'Use the Connect Wallet button in the top right →',
+    'profile.wallet.title': 'Wallet Profile',
+    'profile.wallet.viewChainscan': 'View on chainscan',
+    'profile.merchants.title': 'My Merchants',
+    'profile.merchants.registerNew': 'Register new',
+    'profile.merchants.empty': 'No merchants registered with this wallet yet.',
+    'profile.merchants.emptyCta': 'Register your first merchant',
+    'profile.merchants.pause': 'Pause',
+    'profile.merchants.resume': 'Resume',
+    'profile.merchants.updating': 'Updating…',
+    'profile.merchants.toggleError': 'Could not toggle status — check your connection and try again.',
+    'profile.agent.title': 'Connect your AI Agent',
+    'profile.agent.body': 'Send this one-line install prompt to your personal AI agent. It will fetch the TourSkill SKILL.md and immediately start interacting with the on-chain registry.',
+    'profile.agent.copyButton': 'Copy install prompt',
+    'profile.agent.copied': 'Copied to clipboard',
+
+    // ─── MerchantDetail page ───
+    'detail.back': 'Back to Explorer',
+    'detail.loading': 'Loading merchant…',
+    'detail.error': "Couldn't load this merchant",
+    'detail.badge.verified': 'Verified on 0G Chain',
+    'detail.badge.open': 'Open',
+    'detail.badge.paused': 'Paused',
+    'detail.section.contact': 'Contact & Hours',
+    'detail.section.onchain': 'On-chain Proof',
+    'detail.section.skills': 'Available Agent Skills',
+    'detail.section.specifics': 'Merchant-Specific Fields',
+    'detail.field.hours': 'Hours',
+    'detail.field.phone': 'Phone',
+    'detail.field.email': 'Email',
+    'detail.field.website': 'Website',
+    'detail.field.wallet': 'Owner wallet',
+    'detail.field.did': 'Merchant DID',
+    'detail.field.profileHash': 'Profile hash',
+    'detail.field.contract': 'Registry contract',
+    'detail.viewRegisterTx': 'View register tx on chainscan',
+    'detail.onchain.footer': 'Anchored on 0G Galileo testnet (chainId 16602) via the ERC-8004 MerchantRegistry contract.',
+    'detail.testSkills': 'Test these skills →',
+
+    // ─── AgentDemo page (main hero only) ───
+    'demoPage.title': 'Personal Agent Demo',
+    'demoPage.subtitle': 'Connect your wallet to use 0G Compute LLM — your tokens power the AI agent.',
+    'demoPage.reset': 'Reset',
+
+    // ─── Registration portal (main hero only) ───
+    'register.title': 'Register your Merchant',
+    'register.subtitle': 'Publish your hotel, restaurant, or attraction onto the decentralized TourSkill registry. Any AI agent will be able to discover and invoke your on-chain skills.',
+
     // ─── Common ───
     'common.loading': 'Loading…',
   },
@@ -192,6 +243,57 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     // ─── Status badges ───
     'status.active': '正常营业',
     'status.inactive': '已暂停',
+
+    // ─── Profile page ───
+    'profile.connectWallet.title': '连接钱包',
+    'profile.connectWallet.body': '用钱包登录后即可查看你的 TourSkill 身份、管理已注册的商家，并把你的 AI agent 接入 TourSkill。',
+    'profile.connectWallet.hint': '点击右上角"连接钱包"按钮 →',
+    'profile.wallet.title': '钱包身份',
+    'profile.wallet.viewChainscan': '在 chainscan 查看',
+    'profile.merchants.title': '我的商家',
+    'profile.merchants.registerNew': '新增商家',
+    'profile.merchants.empty': '当前钱包还没有注册任何商家。',
+    'profile.merchants.emptyCta': '注册第一家',
+    'profile.merchants.pause': '暂停营业',
+    'profile.merchants.resume': '恢复营业',
+    'profile.merchants.updating': '更新中……',
+    'profile.merchants.toggleError': '切换状态失败——请检查网络后重试。',
+    'profile.agent.title': '接入你的 AI Agent',
+    'profile.agent.body': '把下面这一行粘贴给你的个人 AI agent，它会自动抓取 TourSkill SKILL.md 并开始跟链上注册表交互。',
+    'profile.agent.copyButton': '复制安装命令',
+    'profile.agent.copied': '已复制到剪贴板',
+
+    // ─── MerchantDetail page ───
+    'detail.back': '返回商家列表',
+    'detail.loading': '加载商家详情……',
+    'detail.error': '加载失败',
+    'detail.badge.verified': '已上链 0G',
+    'detail.badge.open': '营业中',
+    'detail.badge.paused': '已暂停',
+    'detail.section.contact': '联系方式 & 营业时间',
+    'detail.section.onchain': '链上凭证',
+    'detail.section.skills': '可用 Agent 技能',
+    'detail.section.specifics': '商家特定字段',
+    'detail.field.hours': '营业时间',
+    'detail.field.phone': '电话',
+    'detail.field.email': '邮箱',
+    'detail.field.website': '官网',
+    'detail.field.wallet': '所有者钱包',
+    'detail.field.did': '商家 DID',
+    'detail.field.profileHash': 'Profile 哈希',
+    'detail.field.contract': '注册表合约',
+    'detail.viewRegisterTx': '在 chainscan 查看注册交易',
+    'detail.onchain.footer': '锚定在 0G Galileo 测试网 (chainId 16602)，通过 ERC-8004 MerchantRegistry 合约。',
+    'detail.testSkills': '试用这些技能 →',
+
+    // ─── AgentDemo page (main hero only) ───
+    'demoPage.title': '个人 Agent 演示',
+    'demoPage.subtitle': '连接你的钱包以使用 0G Compute LLM——你钱包里的 tokens 为 AI agent 的推理买单。',
+    'demoPage.reset': '重置',
+
+    // ─── Registration portal (main hero only) ───
+    'register.title': '注册你的商家',
+    'register.subtitle': '把你的酒店、餐厅或景点发布到 TourSkill 去中心化注册表。任何 AI agent 都能发现并调用你链上声明的技能。',
 
     // ─── Common ───
     'common.loading': '加载中……',

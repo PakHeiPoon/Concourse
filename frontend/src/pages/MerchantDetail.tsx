@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useT } from '../i18n'
 import {
   ArrowLeft,
   MapPin,
@@ -79,6 +80,7 @@ function typeBadgeClass(type: string): string {
 }
 
 export default function MerchantDetail(): React.JSX.Element {
+  const { t, lang } = useT()
   const { merchantId } = useParams<{ merchantId: string }>()
   const [merchant, setMerchant] = useState<Merchant | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
@@ -102,7 +104,7 @@ export default function MerchantDetail(): React.JSX.Element {
     return (
       <div className="flex items-center justify-center py-32 text-text-muted">
         <Loader2 className="w-5 h-5 animate-spin mr-2" />
-        Loading merchant…
+        {t('detail.loading')}
       </div>
     )
   }
@@ -110,13 +112,16 @@ export default function MerchantDetail(): React.JSX.Element {
   if (error || !merchant) {
     return (
       <div className="text-center py-32">
-        <p className="text-text-muted mb-4">Couldn't load this merchant: {error ?? 'not found'}</p>
-        <Link to="/explorer" className="text-primary hover:text-primary-hover font-semibold">← Back to Explorer</Link>
+        <p className="text-text-muted mb-4">{t('detail.error')}: {error ?? 'not found'}</p>
+        <Link to="/explorer" className="text-primary hover:text-primary-hover font-semibold">← {t('detail.back')}</Link>
       </div>
     )
   }
 
   const sf = merchant.specific_fields ?? {}
+  const displayName = merchant.name?.[lang as 'en' | 'zh'] || merchant.name.en
+  const displayDesc = merchant.description?.[lang as 'en' | 'zh'] || merchant.description.en
+  const altName = lang === 'en' ? merchant.name.zh : merchant.name.en
 
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in duration-500">
@@ -126,7 +131,7 @@ export default function MerchantDetail(): React.JSX.Element {
         className="inline-flex items-center gap-1.5 text-text-muted hover:text-text text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Explorer
+        {t('detail.back')}
       </Link>
 
       {/* Header */}
@@ -137,18 +142,18 @@ export default function MerchantDetail(): React.JSX.Element {
           </span>
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary-soft border border-primary/30 rounded-md text-[10px] font-semibold text-primary">
             <ShieldCheck className="w-3 h-3" strokeWidth={2.5} />
-            Verified on 0G Chain
+            {t('detail.badge.verified')}
           </span>
           {/* Business status badge */}
           {merchant.status === 'inactive' ? (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-2 border border-border-strong rounded-md text-[10px] font-semibold text-text-muted uppercase tracking-wider">
               <Pause className="w-3 h-3" strokeWidth={3} />
-              Paused
+              {t('detail.badge.paused')}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-md text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">
               <CircleDot className="w-3 h-3" strokeWidth={3} />
-              Open
+              {t('detail.badge.open')}
             </span>
           )}
           {merchant.price_level !== undefined && (
@@ -159,10 +164,10 @@ export default function MerchantDetail(): React.JSX.Element {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-text tracking-tight mb-2">
-          {merchant.name.en}
+          {displayName}
         </h1>
-        {merchant.name.zh !== merchant.name.en && (
-          <p className="text-2xl text-text-muted font-medium mb-4">{merchant.name.zh}</p>
+        {altName && altName !== displayName && (
+          <p className="text-2xl text-text-muted font-medium mb-4">{altName}</p>
         )}
 
         <p className="flex items-center gap-2 text-text-muted text-sm mb-6">
@@ -172,7 +177,7 @@ export default function MerchantDetail(): React.JSX.Element {
 
         {/* Full description (no truncation) */}
         <div className="bg-surface rounded-xl p-5 mb-6 border border-border">
-          <p className="text-text leading-relaxed">{merchant.description.en}</p>
+          <p className="text-text leading-relaxed">{displayDesc}</p>
         </div>
 
         {/* Tags */}
@@ -192,13 +197,13 @@ export default function MerchantDetail(): React.JSX.Element {
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         {/* Contact + hours */}
         <div className="bg-white rounded-2xl border border-border p-6">
-          <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">Contact & Hours</h3>
+          <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">{t('detail.section.contact')}</h3>
           <dl className="space-y-3 text-sm">
             {merchant.opening_hours && (
               <div className="flex items-start gap-3">
                 <Clock className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
                 <div>
-                  <dt className="text-text-muted text-xs uppercase tracking-wider">Hours</dt>
+                  <dt className="text-text-muted text-xs uppercase tracking-wider">{t('detail.field.hours')}</dt>
                   <dd className="text-text">{merchant.opening_hours}</dd>
                 </div>
               </div>
@@ -207,7 +212,7 @@ export default function MerchantDetail(): React.JSX.Element {
               <div className="flex items-start gap-3">
                 <Phone className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
                 <div>
-                  <dt className="text-text-muted text-xs uppercase tracking-wider">Phone</dt>
+                  <dt className="text-text-muted text-xs uppercase tracking-wider">{t('detail.field.phone')}</dt>
                   <dd className="text-text">{merchant.contacts.phone}</dd>
                 </div>
               </div>
@@ -216,7 +221,7 @@ export default function MerchantDetail(): React.JSX.Element {
               <div className="flex items-start gap-3">
                 <Mail className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
                 <div>
-                  <dt className="text-text-muted text-xs uppercase tracking-wider">Email</dt>
+                  <dt className="text-text-muted text-xs uppercase tracking-wider">{t('detail.field.email')}</dt>
                   <dd className="text-text break-all">{merchant.contacts.email}</dd>
                 </div>
               </div>
@@ -225,7 +230,7 @@ export default function MerchantDetail(): React.JSX.Element {
               <div className="flex items-start gap-3">
                 <GlobeIcon className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
                 <div>
-                  <dt className="text-text-muted text-xs uppercase tracking-wider">Website</dt>
+                  <dt className="text-text-muted text-xs uppercase tracking-wider">{t('detail.field.website')}</dt>
                   <dd>
                     <a href={merchant.contacts.website} target="_blank" rel="noreferrer"
                        className="text-primary hover:text-primary-hover break-all inline-flex items-center gap-1">
@@ -243,12 +248,12 @@ export default function MerchantDetail(): React.JSX.Element {
         <div className="bg-white rounded-2xl border border-border p-6">
           <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-primary" />
-            On-chain Proof
+            {t('detail.section.onchain')}
           </h3>
           <dl className="space-y-3 text-xs">
             {merchant.wallet_address && (
               <div>
-                <dt className="text-text-muted font-medium mb-1">Owner wallet</dt>
+                <dt className="text-text-muted font-medium mb-1">{t('detail.field.wallet')}</dt>
                 <dd className="flex items-center justify-between gap-2">
                   <CopyableHex value={merchant.wallet_address} label="wallet" />
                   <a href={`${CHAINSCAN_ADDRESS}/${merchant.wallet_address}`} target="_blank" rel="noreferrer"
@@ -259,17 +264,17 @@ export default function MerchantDetail(): React.JSX.Element {
               </div>
             )}
             <div>
-              <dt className="text-text-muted font-medium mb-1">Merchant DID</dt>
+              <dt className="text-text-muted font-medium mb-1">{t('detail.field.did')}</dt>
               <dd><CopyableHex value={merchant.did} label="DID" /></dd>
             </div>
             {merchant.profile_hash && (
               <div>
-                <dt className="text-text-muted font-medium mb-1">Profile hash</dt>
+                <dt className="text-text-muted font-medium mb-1">{t('detail.field.profileHash')}</dt>
                 <dd><CopyableHex value={merchant.profile_hash} label="profile hash" /></dd>
               </div>
             )}
             <div>
-              <dt className="text-text-muted font-medium mb-1">Registry contract</dt>
+              <dt className="text-text-muted font-medium mb-1">{t('detail.field.contract')}</dt>
               <dd className="flex items-center justify-between gap-2">
                 <CopyableHex value={REGISTRY_CONTRACT} label="contract" />
                 <a href={`${CHAINSCAN_ADDRESS}/${REGISTRY_CONTRACT}`} target="_blank" rel="noreferrer"
@@ -287,13 +292,13 @@ export default function MerchantDetail(): React.JSX.Element {
               rel="noreferrer"
               className="mt-4 flex items-center justify-center gap-1.5 w-full px-3 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-hover transition-colors"
             >
-              View register tx on chainscan
+              {t('detail.viewRegisterTx')}
               <ExternalLink className="w-4 h-4" />
             </a>
           )}
 
           <p className="mt-3 pt-3 border-t border-border text-[10px] text-text-muted leading-relaxed">
-            Anchored on 0G Galileo testnet (chainId 16602) via the ERC-8004 MerchantRegistry contract.
+            {t('detail.onchain.footer')}
           </p>
         </div>
       </div>
@@ -303,7 +308,7 @@ export default function MerchantDetail(): React.JSX.Element {
         <div className="bg-white rounded-2xl border border-border p-6">
           <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4 flex items-center gap-2">
             <Code2 className="w-4 h-4 text-text-muted" />
-            Available Agent Skills
+            {t('detail.section.skills')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {merchant.skills.map(s => (
@@ -316,13 +321,13 @@ export default function MerchantDetail(): React.JSX.Element {
             to={`/explorer?test=${merchant.merchant_id}`}
             className="mt-5 inline-flex items-center gap-1.5 text-primary hover:text-primary-hover text-sm font-semibold"
           >
-            Test these skills →
+            {t('detail.testSkills')}
           </Link>
         </div>
 
         {Object.keys(sf).filter(k => k !== 'register_tx_hash').length > 0 && (
           <div className="bg-white rounded-2xl border border-border p-6">
-            <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">Merchant-Specific Fields</h3>
+            <h3 className="text-sm font-bold text-text uppercase tracking-wider mb-4">{t('detail.section.specifics')}</h3>
             <dl className="space-y-2 text-sm">
               {Object.entries(sf)
                 .filter(([k]) => k !== 'register_tx_hash')
