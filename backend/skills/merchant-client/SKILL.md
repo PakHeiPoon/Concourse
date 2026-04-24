@@ -136,56 +136,98 @@ assistant (that's you) should:
 Do not invent skill names. If the owner wants a skill not in this list, tell
 them "that one's on the roadmap — for now please pick from the supported set."
 
-### 2.3 Write the draft + hand off to browser for signing
+### 2.3 Create a signed draft and hand the URL to the owner
 
-Once the owner confirms:
+Agents must never hold private keys. Instead, post the confirmed draft to
+the **drafts** endpoint — the backend returns a single-use sign URL that
+the owner opens in their own browser.
 
 ```http
-POST ${TOURSKILL_API_BASE}/v1/merchants
+POST ${TOURSKILL_API_BASE}/v1/drafts
 Content-Type: application/json
 
-{ ...the confirmed draft above... }
+{ ...the confirmed draft above — NO wallet_address field... }
 ```
 
 Response:
 ```jsonc
 {
-  "message": "Merchant registered successfully",
-  "data": {
-    "merchant_id": "merchant:xxxxxxxxxxxx",   // ← persist this to env as MERCHANT_ID
-    "did": "did:tourskill:merchant:xxxxxxxxxxxx",
-    "status": "active",
-    // ... everything else
-  }
+  "draft_id":    "hZQl1fU…",                                      // opaque, 22 chars
+  "sign_url":    "https://tourskill.paking.xyz/merchant/sign/…",  // give this to the owner
+  "status":      "pending",
+  "expires_at":  "2026-04-25T13:42:00+00:00",                     // 60 min TTL
+  "payload":     { ...the draft you sent... },
+  "merchant_id": null,
+  "wallet_address": null,
+  "tx_hash":     null
 }
 ```
 
-Then tell the owner:
+Then say to the owner — **verbatim**, using the URL from the response:
 
-> "Draft saved. Final step: sign the on-chain registration. Please open this URL
-> in your browser and connect MetaMask —
-> **`${TOURSKILL_CONSOLE_BASE}/merchant/sign/${merchant_id}`**
+> "Draft ready. Open this link in your browser and connect MetaMask to
+> sign. One popup, then you're live on 0G Chain.
 >
-> You'll see your profile summary one more time, then a single MetaMask popup.
-> After you sign, your listing is live on the 0G Galileo testnet."
+> **${sign_url}**
+>
+> I'll wait here until you finish — feel free to close my window, come
+> back, and say _'I signed it'_."
 
-**Why this step happens in the browser, not here**: agents must never hold
-private keys. The web console uses MetaMask (or any EIP-1193 wallet) so the
-owner signs themselves — not you.
+### 2.4 Poll for the signed result
 
-After the owner signs, the web console writes `register_tx_hash` back to the
-backend. Once that's done, `GET /v1/merchants/${merchant_id}` will include
-`register_tx_hash` pointing to the on-chain tx.
+While the owner is in the browser, poll the same draft endpoint every
+3–5 seconds (or wait for the owner to tell you they're done, then poll
+once):
 
-### 2.4 Persist the merchant_id for future ops
+```http
+GET ${TOURSKILL_API_BASE}/v1/drafts/${draft_id}
+```
+
+When `status` flips to `"signed"`, the response includes:
+
+```jsonc
+{
+  "draft_id":      "hZQl1fU…",
+  "status":        "signed",
+  "merchant_id":   "merchant:xxxxxxxxxxxx",   // ← persist as MERCHANT_ID
+  "wallet_address":"0xABC…",                  // ← persist as OWNER_WALLET
+  "tx_hash":       "0xdeadbeef…"              // ← on-chain register proof
+}
+```
+
+Stop polling, confirm to the owner ("Signed ✅ — tx `0xdead…beef`"), and
+persist both `merchant_id` and `wallet_address` locally.
+
+**What's happening under the hood**: the sign page creates the merchant
+row off-chain, prompts MetaMask for `MerchantRegistry.register(...)`,
+then reports the tx hash back to the draft. You don't do any of that —
+you just wait for the `status` flip.
+
+### 2.5 Persist the credentials for future ops
 
 After onboard, set:
 ```
 MERCHANT_ID=merchant:xxxxxxxxxxxx
+MERCHANT_WALLET_ADDRESS=0xABC…
 ```
 
-All subsequent verbs assume `MERCHANT_ID` is already set. If the owner has
-multiple listings, list them first (see §3) and ask which one to operate on.
+For every subsequent verb (Update, Pause, Resume), send the owner's
+wallet as an auth header:
+
+```
+X-Wallet-Address: ${MERCHANT_WALLET_ADDRESS}
+```
+
+This is the "Sign Once, Govern Forever" contract: the owner signed
+once on-chain; the backend remembers the wallet as the legitimate
+controller, and you speak on its behalf with the header.
+
+> **Auth note (MVP, testnet only)**: the header is currently a plain
+> wallet address, not a cryptographic proof. Anyone who learns the
+> wallet can PATCH. Mainnet will require a SIWE-signed nonce.
+
+If the owner has multiple listings, list them first (see §3) and ask
+which one to operate on.
 
 ---
 

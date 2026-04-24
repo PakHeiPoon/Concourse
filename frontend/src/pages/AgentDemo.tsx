@@ -67,11 +67,11 @@ export default function AgentDemo() {
       )
 
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      addLog('Agent responded', 'success')
+      addLog(t('demo.log.responded'), 'success')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unknown error'
+      const msg = err instanceof Error ? err.message : t('demo.log.unknownError')
       addLog(`Error: ${msg}`, 'error')
-      setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, an error occurred: ${msg}` }])
+      setMessages(prev => [...prev, { role: 'assistant', content: t('demo.chat.errorReply', { msg }) }])
     } finally {
       setLoading(false)
     }
@@ -110,9 +110,9 @@ export default function AgentDemo() {
             <div className="flex items-center gap-3">
               <Wallet className="w-5 h-5 text-indigo-600" />
               <div>
-                <p className="text-sm font-semibold text-slate-800">Connect to 0G Compute Network</p>
+                <p className="text-sm font-semibold text-slate-800">{t('demo.connectTitle')}</p>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Your MetaMask wallet pays for LLM inference with 0G tokens — fully decentralized.
+                  {t('demo.connect.desc')}
                 </p>
               </div>
             </div>
@@ -137,12 +137,12 @@ export default function AgentDemo() {
                   {computeLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Connecting...
+                      {t('demo.connect.connecting')}
                     </>
                   ) : (
                     <>
                       <Wallet className="w-4 h-4" />
-                      Connect Wallet
+                      {t('demo.connect.cta')}
                     </>
                   )}
                 </button>
@@ -167,9 +167,9 @@ export default function AgentDemo() {
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-emerald-800">Connected to 0G Compute · {NETWORKS[connectedNetwork || 'testnet'].name}</p>
+            <p className="text-sm font-semibold text-emerald-800">{t('demo.connectBadge', { network: NETWORKS[connectedNetwork || 'testnet'].name })}</p>
             <p className="text-xs text-emerald-600 font-mono">
-              Model: {model} · Provider: {provider?.slice(0, 8)}...{provider?.slice(-4)}
+              {t('demo.connected.model', { model: model || '', provider: `${provider?.slice(0, 8)}...${provider?.slice(-4)}` })}
             </p>
           </div>
         </div>
@@ -188,10 +188,10 @@ export default function AgentDemo() {
                 <div className={`absolute bottom-0 right-0 w-3 h-3 ${ready ? 'bg-green-500' : 'bg-slate-400'} border-2 border-white rounded-full`}></div>
               </div>
               <div>
-                <h3 className="font-bold text-slate-900 leading-tight">TourSkill AI Agent</h3>
+                <h3 className="font-bold text-slate-900 leading-tight">{t('demo.agentName')}</h3>
                 <div className={`flex items-center gap-1.5 text-xs font-medium ${ready ? 'text-emerald-600 bg-emerald-50' : 'text-slate-500 bg-slate-100'} px-2 py-0.5 rounded-full w-fit mt-0.5`}>
                   <CheckCircle2 className="w-3 h-3" />
-                  {ready ? `0G Compute · ${model}` : 'Not Connected'}
+                  {ready ? t('demo.agentStatus.ready', { model: model || '' }) : t('demo.agentStatus.notConnected')}
                 </div>
               </div>
             </div>
@@ -203,20 +203,24 @@ export default function AgentDemo() {
               <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-4">
                 <Wallet className="w-12 h-12 opacity-40" />
                 <div className="text-center">
-                  <p className="font-medium text-slate-500">Connect your wallet to start</p>
-                  <p className="text-sm mt-1">Your 0G tokens power the AI inference</p>
+                  <p className="font-medium text-slate-500">{t('demo.empty.title')}</p>
+                  <p className="text-sm mt-1">{t('demo.empty.subtitle')}</p>
                 </div>
               </div>
             )}
             {ready && messages.length === 0 && (
               <div className="flex justify-start">
                 <div className="max-w-[85%] p-4 text-[15px] leading-relaxed shadow-sm bg-white border border-slate-100 text-slate-700 rounded-2xl rounded-tl-sm">
-                  <p>Hello! I'm your AI travel assistant powered by <strong className="text-slate-900 font-bold">0G Compute Network</strong> and the <strong className="text-slate-900 font-bold">TourSkill</strong> decentralized registry.</p>
-                  <p className="mt-3">I can discover tourism merchants and interact with their on-chain skills. Try asking me:</p>
-                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>"Find restaurants in Hangzhou"</span></p>
-                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>"Any hotels in Shanghai?"</span></p>
-                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>"Show me attractions in Suzhou"</span></p>
-                  <p className="mt-3">What are you looking for?</p>
+                  <p>
+                    {t('demo.greeting').split('**').map((part, k) =>
+                      k % 2 === 1 ? <strong key={k} className="text-slate-900 font-bold">{part}</strong> : part,
+                    )}
+                  </p>
+                  <p className="mt-3">{t('demo.greeting.canDo')}</p>
+                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>{t('demo.greeting.ex1')}</span></p>
+                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>{t('demo.greeting.ex2')}</span></p>
+                  <p className="ml-3 mt-1 flex items-start gap-1.5"><span className="text-indigo-400 mt-0.5">•</span><span>{t('demo.greeting.ex3')}</span></p>
+                  <p className="mt-3">{t('demo.greeting.ask')}</p>
                 </div>
               </div>
             )}
@@ -274,7 +278,7 @@ export default function AgentDemo() {
                 }}
                 disabled={!ready}
                 className="flex-1 max-h-32 min-h-[44px] bg-transparent px-3 py-2.5 text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none disabled:opacity-50"
-                placeholder={ready ? "Ask about restaurants, hotels, attractions..." : "Connect your wallet first..."}
+                placeholder={ready ? t('demo.input.ph.ready') : t('demo.input.ph.notReady')}
                 rows={1}
               />
               <button
@@ -288,8 +292,8 @@ export default function AgentDemo() {
             <div className="text-center mt-3">
               <span className="text-[11px] text-slate-400 font-medium">
                 {ready
-                  ? `Powered by 0G Compute · ${model} · Your wallet pays for inference`
-                  : 'Connect MetaMask to power the AI agent with your 0G tokens'}
+                  ? t('demo.footer.poweredBy', { model: model || '' })
+                  : t('demo.footer.notReady')}
               </span>
             </div>
           </div>
@@ -301,7 +305,7 @@ export default function AgentDemo() {
           <div className="px-4 py-3 bg-[#111111] border-b border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Terminal className="w-4 h-4 text-slate-400" />
-              <span className="text-xs font-semibold text-slate-300 tracking-wider uppercase">Agent Execution Logs</span>
+              <span className="text-xs font-semibold text-slate-300 tracking-wider uppercase">{t('demo.logs.title')}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="relative flex h-2 w-2">
@@ -309,7 +313,7 @@ export default function AgentDemo() {
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${ready ? 'bg-emerald-500' : 'bg-slate-600'}`}></span>
               </span>
               <span className={`text-[10px] font-mono ${ready ? 'text-emerald-500' : 'text-slate-600'}`}>
-                {ready ? '0G Connected' : 'Disconnected'}
+                {ready ? t('demo.logs.connected') : t('demo.logs.disconnected')}
               </span>
             </div>
           </div>
@@ -335,7 +339,7 @@ export default function AgentDemo() {
             {logs.length === 0 && (
               <div className="text-slate-600 flex flex-col items-center justify-center h-full space-y-3 opacity-50">
                 <Terminal className="w-8 h-8" />
-                <p>Connect wallet to see agent activity...</p>
+                <p>{t('demo.logs.empty')}</p>
               </div>
             )}
             <div ref={logsEndRef} />

@@ -326,18 +326,18 @@ export default function RegistrationPortal() {
           <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Registration Successful!</h2>
-          <p className="text-slate-500 mb-8">Your business profile has been anchored to the 0G blockchain.</p>
-          
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('register.success.title')}</h2>
+          <p className="text-slate-500 mb-8">{t('register.success.desc')}</p>
+
           <div className="bg-slate-50 rounded-2xl p-6 text-left border border-slate-200 mb-8 space-y-4">
             <div>
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Your On-Chain DID</label>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t('register.success.did')}</label>
               <div className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-slate-700 break-all">
                 {did}
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Profile Hash (SHA-256)</label>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t('register.success.hash')}</label>
               <div className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-slate-700 break-all">
                 {profileHash || 'N/A'}
               </div>
@@ -345,7 +345,7 @@ export default function RegistrationPortal() {
             {txHash && (
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1 flex items-center gap-1">
-                  <Link2 className="w-3 h-3" /> On-Chain Transaction
+                  <Link2 className="w-3 h-3" /> {t('register.success.tx')}
                 </label>
                 <a
                   href={`${ZERO_G_CHAIN.explorerUrl}/tx/${txHash}`}
@@ -354,26 +354,26 @@ export default function RegistrationPortal() {
                   className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-emerald-700 break-all block hover:bg-emerald-50 hover:border-emerald-300 transition-colors cursor-pointer"
                 >
                   {txHash}
-                  <span className="text-xs text-emerald-500 ml-2">View on 0G Explorer &#x2197;</span>
+                  <span className="text-xs text-emerald-500 ml-2">{t('register.success.viewExplorer')} &#x2197;</span>
                 </a>
               </div>
             )}
             <div>
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">Skill Endpoint</label>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">{t('register.success.endpoint')}</label>
               <div className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-slate-700 break-all">
                 http://localhost:8000/v1/merchants/{merchantId}
               </div>
             </div>
           </div>
-          
-          <button 
+
+          <button
             onClick={() => {
               setSuccess(false)
               setStep(1)
             }}
             className="bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-8 rounded-full transition-all hover:-translate-y-0.5 shadow-md"
           >
-            Register Another Business
+            {t('register.success.again')}
           </button>
         </div>
       ) : (
@@ -387,8 +387,8 @@ export default function RegistrationPortal() {
                   1
                 </div>
                 <div className="ml-4 mt-1">
-                  <h3 className={`text-sm font-bold ${step >= 1 ? 'text-slate-900' : 'text-slate-500'}`}>Basic Info</h3>
-                  <p className="text-xs text-slate-500 mt-1">Type, name and location</p>
+                  <h3 className={`text-sm font-bold ${step >= 1 ? 'text-slate-900' : 'text-slate-500'}`}>{t('register.step1.title')}</h3>
+                  <p className="text-xs text-slate-500 mt-1">{t('register.step1.desc')}</p>
                 </div>
               </div>
               
@@ -397,8 +397,8 @@ export default function RegistrationPortal() {
                   2
                 </div>
                 <div className="ml-4 mt-1">
-                  <h3 className={`text-sm font-bold ${step >= 2 ? 'text-slate-900' : 'text-slate-500'}`}>Business Details</h3>
-                  <p className="text-xs text-slate-500 mt-1">Common and type fields</p>
+                  <h3 className={`text-sm font-bold ${step >= 2 ? 'text-slate-900' : 'text-slate-500'}`}>{t('register.step2.title')}</h3>
+                  <p className="text-xs text-slate-500 mt-1">{t('register.step2.desc')}</p>
                 </div>
               </div>
 
@@ -407,8 +407,8 @@ export default function RegistrationPortal() {
                   3
                 </div>
                 <div className="ml-4 mt-1">
-                  <h3 className={`text-sm font-bold ${step >= 3 ? 'text-slate-900' : 'text-slate-500'}`}>On-Chain Auth</h3>
-                  <p className="text-xs text-slate-500 mt-1">Wallet signature</p>
+                  <h3 className={`text-sm font-bold ${step >= 3 ? 'text-slate-900' : 'text-slate-500'}`}>{t('register.step3.title')}</h3>
+                  <p className="text-xs text-slate-500 mt-1">{t('register.step3.desc')}</p>
                 </div>
               </div>
             </div>
@@ -420,16 +420,16 @@ export default function RegistrationPortal() {
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Merchant Type</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.type')}</label>
                     <select
                       value={form.merchant_type}
                       onChange={(e) => updateField('merchant_type', e.target.value)}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
                     >
-                      <option value="restaurant">Restaurant</option>
-                      <option value="hotel">Hotel</option>
-                      <option value="attraction">Attraction</option>
-                      <option value="shop">Shop</option>
+                      <option value="restaurant">{t('register.type.restaurant')}</option>
+                      <option value="hotel">{t('register.type.hotel')}</option>
+                      <option value="attraction">{t('register.type.attraction')}</option>
+                      <option value="shop">{t('register.type.shop')}</option>
                     </select>
                   </div>
                   <button
@@ -438,49 +438,49 @@ export default function RegistrationPortal() {
                     className="ml-4 mt-6 flex items-center gap-1.5 px-4 py-3 text-sm font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors shrink-0"
                   >
                     <FlaskConical className="w-4 h-4" />
-                    Fill Demo Data
+                    {t('register.fillDemo')}
                   </button>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Business Name</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.name')}</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={(e) => updateField('name', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                    placeholder="e.g. Louwailou Restaurant"
+                    placeholder={t('register.field.name.ph')}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">City</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.city')}</label>
                     <input
                       type="text"
                       value={form.city}
                       onChange={(e) => updateField('city', e.target.value)}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                      placeholder="e.g. Hangzhou"
+                      placeholder={t('register.field.city.ph')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Country Code</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.country')}</label>
                     <input
                       type="text"
                       value={form.country}
                       onChange={(e) => updateField('country', e.target.value)}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                      placeholder="e.g. CN"
+                      placeholder={t('register.field.country.ph')}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Detailed Address</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.address')}</label>
                   <input
                     type="text"
                     value={form.address}
                     onChange={(e) => updateField('address', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                    placeholder="No. 30 Gushan Road, West Lake District"
+                    placeholder={t('register.field.address.ph')}
                   />
                 </div>
                 <div className="pt-4 flex justify-end">
@@ -488,7 +488,7 @@ export default function RegistrationPortal() {
                     onClick={() => setStep(2)}
                     className="bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
                   >
-                    <span>Next Step</span>
+                    <span>{t('register.next')}</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -498,12 +498,12 @@ export default function RegistrationPortal() {
             {step === 2 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Description (For AI Agents)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.desc')}</label>
                   <textarea
                     value={form.description}
                     onChange={(e) => updateField('description', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none resize-none h-32"
-                    placeholder="Provide a clear, concise description of your business. AI agents will use this to match you with user requests."
+                    placeholder={t('register.field.desc.ph')}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -513,29 +513,29 @@ export default function RegistrationPortal() {
                 </div>
                 <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/70">
                   <p className="text-sm font-semibold text-slate-700 mb-3">
-                    {form.merchant_type.toUpperCase()} Specific Fields
+                    {t('register.specificFields', { type: form.merchant_type.toUpperCase() })}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {typeSpecificFields.map((field) => (
                       <DynamicField key={field.key} field={field} value={form[field.key]} onChange={updateField} />
                     ))}
                     {typeSpecificFields.length === 0 && (
-                      <p className="text-sm text-slate-500">No type fields loaded yet.</p>
+                      <p className="text-sm text-slate-500">{t('register.noTypeFields')}</p>
                     )}
                   </div>
                 </div>
                 <div className="pt-4 flex justify-between">
-                  <button 
+                  <button
                     onClick={() => setStep(1)}
                     className="text-slate-500 hover:text-slate-800 font-medium py-3 px-4 rounded-xl transition-all"
                   >
-                    Back
+                    {t('register.back')}
                   </button>
-                  <button 
+                  <button
                     onClick={() => setStep(3)}
                     className="bg-slate-900 hover:bg-slate-800 text-white font-medium py-3 px-6 rounded-xl transition-all flex items-center gap-2"
                   >
-                    <span>Next Step</span>
+                    <span>{t('register.next')}</span>
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -545,18 +545,18 @@ export default function RegistrationPortal() {
             {step === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 mb-6">
-                  <h4 className="font-semibold text-blue-900 mb-2">Almost there!</h4>
+                  <h4 className="font-semibold text-blue-900 mb-2">{t('register.almostThere')}</h4>
                   <p className="text-sm text-blue-700 mb-4">
-                    Your profile data will be hashed and stored on the 0G Network. You need to sign the transaction with your Web3 wallet.
+                    {t('register.almostTitle.desc')}
                   </p>
                   <div className="bg-white/60 p-3 rounded-lg border border-blue-100/50 font-mono text-xs text-slate-600">
-                    Type: {form.merchant_type}<br />
-                    City: {form.city || '-'}<br />
-                    Skills: {form.supported_skills || '-'}
+                    {t('register.field.type')}: {form.merchant_type}<br />
+                    {t('register.field.city')}: {form.city || '-'}<br />
+                    {t('register.field.skills')}: {form.supported_skills || '-'}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Wallet Address</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.wallet')}</label>
                   <div className="relative">
                     <Wallet className="w-4 h-4 absolute left-3 top-3.5 text-slate-400" />
                     <input
@@ -569,13 +569,13 @@ export default function RegistrationPortal() {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Supported Skills (comma-separated)</label>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">{t('register.field.skills')}</label>
                   <input
                     type="text"
                     value={form.supported_skills}
                     onChange={(e) => updateField('supported_skills', e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all outline-none"
-                    placeholder="get_menu,reserve_table,create_booking"
+                    placeholder={t('register.field.skills.ph')}
                   />
                 </div>
                 {error && (
@@ -583,16 +583,16 @@ export default function RegistrationPortal() {
                     {error}
                   </div>
                 )}
-                
+
                 <div className="pt-4 flex justify-between">
-                  <button 
+                  <button
                     onClick={() => setStep(2)}
                     className="text-slate-500 hover:text-slate-800 font-medium py-3 px-4 rounded-xl transition-all"
                     disabled={loading}
                   >
-                    Back
+                    {t('register.back')}
                   </button>
-                  <button 
+                  <button
                     onClick={handleRegister}
                     disabled={loading}
                     className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-8 rounded-xl transition-all flex items-center gap-2 shadow-md shadow-blue-500/20"
@@ -600,11 +600,11 @@ export default function RegistrationPortal() {
                     {loading ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>{chainLoading ? 'Signing On-Chain Tx...' : 'Saving Profile...'}</span>
+                        <span>{chainLoading ? t('register.submitting.chain') : t('register.submitting.off')}</span>
                       </>
                     ) : (
                       <>
-                        <span>Register on 0G Chain</span>
+                        <span>{t('register.submit')}</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}

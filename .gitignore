@@ -39,7 +39,11 @@ contracts/cache/
 contracts/artifacts/
 
 # Internal-only scripts (contain wallet addresses + seed data, not for public)
-backend/scripts/
+# Note: match files (`/*`) not the directory (`/`) — with `/`, negations inside
+# don't work because git never descends into an ignored directory.
+backend/scripts/*
+# Exception: safe smoke test that hits public endpoints only (no keys, no seed)
+!backend/scripts/e2e_draft_flow.py
 
 # SQL schema (internal Supabase setup, not for public)
 backend/sql/

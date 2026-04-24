@@ -166,6 +166,30 @@ def create_merchant(payload: MerchantCreateRequest) -> Dict[str, Any]:
     return normalize_merchant(result.data[0])
 
 
+def attach_register_tx_hash(merchant_id: str, tx_hash: str) -> None:
+    """Merge an on-chain register tx hash into a merchant's specific_fields.
+
+    Used by the draft/complete endpoint once the browser confirms the
+    on-chain register call succeeded. Merges rather than overwrites so
+    other specific_fields (merchant-type-specific attributes) survive.
+    """
+    client = get_supabase_client()
+    res = (
+        client.table("merchants")
+        .select("specific_fields")
+        .eq("merchant_id", merchant_id)
+        .limit(1)
+        .execute()
+    )
+    if not res.data:
+        return
+    specific = res.data[0].get("specific_fields") or {}
+    specific["register_tx_hash"] = tx_hash
+    client.table("merchants").update({"specific_fields": specific}).eq(
+        "merchant_id", merchant_id
+    ).execute()
+
+
 def discover_merchants(req: DiscoverRequest) -> Dict[str, Any]:
     client = get_supabase_client()
     query = (

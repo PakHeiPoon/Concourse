@@ -4,6 +4,7 @@ import RegistrationPortal from './pages/RegistrationPortal'
 import Explorer from './pages/Explorer'
 import AgentDemo from './pages/AgentDemo'
 import MerchantDetail from './pages/MerchantDetail'
+import MerchantSign from './pages/MerchantSign'
 import ProfilePage from './pages/ProfilePage'
 import { Wallet, User as UserIcon, LogOut, ChevronDown, Languages } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -187,6 +188,7 @@ function Layout() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<RegistrationPortal />} />
           <Route path="/explorer" element={<Explorer />} />
+          <Route path="/merchant/sign/:draftId" element={<MerchantSign />} />
           <Route path="/merchant/:merchantId" element={<MerchantDetail />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/demo" element={<AgentDemo />} />
