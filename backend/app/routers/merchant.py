@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Header, HTTPException, Request
 
 from app.constants.form_schema import FORM_SCHEMA
-from app.schemas.merchant import DiscoverRequest, MerchantCreateRequest
-from app.services.merchant_service import create_merchant, discover_merchants, fetch_merchant_by_id
+from app.schemas.merchant import DiscoverRequest, MerchantCreateRequest, MerchantUpdateRequest
+from app.services.merchant_service import create_merchant, discover_merchants, fetch_merchant_by_id, update_merchant
 from app.services.skill_service import execute_skill
 
 router = APIRouter()
@@ -27,6 +27,26 @@ def discover(req: DiscoverRequest):
 @router.get("/merchants/{merchant_id}")
 def get_merchant(merchant_id: str):
     return fetch_merchant_by_id(merchant_id)
+
+
+@router.patch("/merchants/{merchant_id}")
+def patch_merchant(
+    merchant_id: str,
+    payload: MerchantUpdateRequest,
+    x_wallet_address: str = Header(
+        ...,
+        alias="X-Wallet-Address",
+        description="Owner wallet (case-insensitive). MVP auth — to be replaced by SIWE.",
+    ),
+):
+    """Partial update of an existing merchant's off-chain profile.
+
+    Auth (MVP): X-Wallet-Address header must case-insensitively match the
+    merchant's stored owner wallet. No cryptographic proof yet — treat as
+    testnet-only until SIWE signed nonces ship.
+    """
+    merchant = update_merchant(merchant_id, payload, x_wallet_address)
+    return {"message": "Merchant updated", "data": merchant}
 
 
 @router.get("/merchants/{merchant_id}/skills")

@@ -4,7 +4,7 @@ from typing import Any, Dict
 from fastapi import HTTPException
 
 from app.db.supabase_client import get_supabase_client
-from app.schemas.merchant import DiscoverRequest, MerchantCreateRequest
+from app.schemas.merchant import DiscoverRequest, MerchantCreateRequest, MerchantUpdateRequest
 from app.services.hash_service import compute_profile_hash
 
 
@@ -58,6 +58,59 @@ def fetch_merchant_by_id(merchant_id: str) -> Dict[str, Any]:
     if not res.data:
         raise HTTPException(status_code=404, detail="Merchant not found")
     return normalize_merchant(res.data[0])
+
+
+def update_merchant(
+    merchant_id: str,
+    payload: MerchantUpdateRequest,
+    caller_wallet: str,
+) -> Dict[str, Any]:
+    """Partial update of a merchant's off-chain profile.
+
+    Authorization (MVP): the caller's wallet (passed via X-Wallet-Address
+    header, case-insensitive) must match the merchant's stored
+    wallet_address. This is NOT a cryptographic proof and MUST be
+    upgraded to SIWE-signed nonces before any mainnet migration.
+    TODO(auth): replace with signed-nonce verification when SIWE ships.
+
+    On-chain fields (wallet_address, profile_hash, register_tx_hash) are
+    immutable through this endpoint by design — they anchor identity.
+    """
+    client = get_supabase_client()
+
+    # Fetch current row for auth check
+    res = (
+        client.table("merchants")
+        .select("wallet_address")
+        .eq("merchant_id", merchant_id)
+        .limit(1)
+        .execute()
+    )
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Merchant not found")
+
+    owner = (res.data[0].get("wallet_address") or "").lower()
+    if not caller_wallet or caller_wallet.lower() != owner:
+        raise HTTPException(
+            status_code=403,
+            detail="Wallet does not own this merchant",
+        )
+
+    # Build the partial update dict — only include explicitly-set fields
+    updates: Dict[str, Any] = payload.model_dump(exclude_unset=True)
+    if not updates:
+        # No-op update — just return current state
+        return fetch_merchant_by_id(merchant_id)
+
+    result = (
+        client.table("merchants")
+        .update(updates)
+        .eq("merchant_id", merchant_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Update failed")
+    return normalize_merchant(result.data[0])
 
 
 def create_merchant(payload: MerchantCreateRequest) -> Dict[str, Any]:
