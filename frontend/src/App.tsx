@@ -5,7 +5,7 @@ import Explorer from './pages/Explorer'
 import AgentDemo from './pages/AgentDemo'
 import MerchantDetail from './pages/MerchantDetail'
 import ProfilePage from './pages/ProfilePage'
-import { Wallet, Sparkles, User as UserIcon, LogOut, ChevronDown } from 'lucide-react'
+import { Wallet, User as UserIcon, LogOut, ChevronDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { BrowserProvider } from 'ethers'
 
@@ -91,9 +91,11 @@ function Layout() {
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-10">
               <Link to="/" className="flex items-center space-x-2 group">
-                <div className="bg-gradient-to-br from-primary to-accent w-10 h-10 rounded-xl flex items-center justify-center shadow-md shadow-primary/15 group-hover:scale-105 transition-transform duration-300">
-                  <Sparkles className="text-white w-5 h-5" strokeWidth={2.5} />
-                </div>
+                <img
+                  src="/tourskill-logo.png"
+                  alt="TourSkill logo"
+                  className="w-10 h-10 rounded-xl object-cover group-hover:scale-105 transition-transform duration-300"
+                />
                 <span className="text-xl font-bold tracking-tight text-text">
                   TourSkill
                 </span>
