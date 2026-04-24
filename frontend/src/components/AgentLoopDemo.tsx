@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { RotateCcw, Terminal } from 'lucide-react'
+import { useT } from '../i18n'
 
 /**
  * AgentLoopDemo — static terminal-style animation of the SKILL.md flow.
@@ -76,6 +77,7 @@ function linePrefix(kind: LineKind): string {
 }
 
 export default function AgentLoopDemo(): React.JSX.Element {
+  const { t } = useT()
   const [visibleCount, setVisibleCount] = useState<number>(0)
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -145,14 +147,12 @@ export default function AgentLoopDemo(): React.JSX.Element {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 bg-text/5 border border-border px-3 py-1 rounded-full text-text-muted text-xs font-medium mb-4">
           <Terminal className="w-3.5 h-3.5" />
-          <span>Live demo · no real charges</span>
+          <span>{t('demo.badge')}</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-text tracking-tight mb-3">
-          Watch your agent work
+          {t('demo.title')}
         </h2>
-        <p className="text-text-muted max-w-xl mx-auto">
-          Four HTTP calls. One on-chain receipt. No platform in between.
-        </p>
+        <p className="text-text-muted max-w-xl mx-auto">{t('demo.subtitle')}</p>
       </div>
 
       {/* Terminal window */}
@@ -165,7 +165,7 @@ export default function AgentLoopDemo(): React.JSX.Element {
             <span className="w-3 h-3 rounded-full bg-green-500" />
           </div>
           <div className="text-slate-400 text-xs font-mono">
-            tourskill agent · {isPlaying ? 'running' : 'idle'}
+            tourskill agent · {isPlaying ? t('demo.terminalLabel.running') : t('demo.terminalLabel.idle')}
           </div>
           <button
             onClick={() => playScript()}
@@ -173,7 +173,7 @@ export default function AgentLoopDemo(): React.JSX.Element {
             aria-label="Replay demo"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Replay</span>
+            <span className="hidden sm:inline">{t('demo.replay')}</span>
           </button>
         </div>
 
@@ -201,21 +201,21 @@ export default function AgentLoopDemo(): React.JSX.Element {
           )}
           {visibleCount === SCRIPT.length && !isPlaying && (
             <div className="text-slate-500 mt-3 text-xs">
-              ── replays in a few seconds ──
+              {t('demo.restartSoon')}
             </div>
           )}
         </div>
       </div>
 
       <p className="text-center text-text-muted text-sm mt-6">
-        Want to actually try it?{' '}
+        {t('demo.cta.before')}
         <a
           href="https://api.tourskill.paking.xyz/skills/user-client/SKILL.md"
           target="_blank"
           rel="noreferrer"
           className="text-primary hover:text-primary-hover font-semibold"
         >
-          Install the skill →
+          {t('demo.cta.link')}
         </a>
       </p>
     </section>

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import AgentLoopDemo from '../components/AgentLoopDemo'
 import Roadmap from '../components/Roadmap'
+import { useT } from '../i18n'
 
 const INSTALL_PROMPT = 'Install the TourSkill skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
 const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
@@ -19,6 +20,7 @@ const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
 type Audience = 'human' | 'agent' | null
 
 export default function Home(): React.JSX.Element {
+  const { t } = useT()
   const [copied, setCopied] = useState<boolean>(false)
   const [audience, setAudience] = useState<Audience>(null)
 
@@ -42,22 +44,21 @@ export default function Home(): React.JSX.Element {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
         </span>
-        <span>28 merchants live on 0G testnet</span>
+        <span>{t('home.liveBadge')}</span>
       </div>
 
       {/* Hero */}
       <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-text text-center leading-[1.08] mb-6">
-        The Decentralized <br className="hidden md:block" />
+        {t('home.hero.line1')} <br className="hidden md:block" />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-hover to-accent">
-          A2A Tourism Registry
+          {t('home.hero.line2')}
         </span>
       </h1>
 
       <p className="text-lg md:text-xl text-text-muted max-w-2xl text-center leading-relaxed mb-12 px-4">
-        Your agent talks to their agent. No OTA, no middleman.
-        Every merchant bound to a real wallet, every call settled via{' '}
-        <span className="text-primary font-semibold">x402 micropayments</span>{' '}
-        at the HTTP layer.
+        {t('home.hero.subtitle.before')}
+        <span className="text-primary font-semibold">{t('home.hero.subtitle.highlight')}</span>
+        {t('home.hero.subtitle.after')}
       </p>
 
       {/* Dual CTA */}
@@ -70,7 +71,7 @@ export default function Home(): React.JSX.Element {
           }`}
         >
           <User className="w-5 h-5" strokeWidth={2.5} />
-          <span>I'm Human</span>
+          <span>{t('home.cta.human')}</span>
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </Link>
         <button
@@ -80,7 +81,7 @@ export default function Home(): React.JSX.Element {
           }`}
         >
           <Bot className="w-5 h-5 text-primary" strokeWidth={2.5} />
-          <span>I'm an Agent</span>
+          <span>{t('home.cta.agent')}</span>
           {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4 text-text-muted" />}
         </button>
       </div>
@@ -96,7 +97,7 @@ export default function Home(): React.JSX.Element {
         <div className="flex items-center justify-between mb-4">
           <h3 className="flex items-center gap-2 text-text font-semibold">
             <Bot className="w-4 h-4 text-primary" />
-            <span>Send your AI agent to TourSkill</span>
+            <span>{t('home.install.title')}</span>
           </h3>
           <button
             onClick={copyInstall}
@@ -105,12 +106,12 @@ export default function Home(): React.JSX.Element {
             {copied ? (
               <>
                 <Check className="w-3.5 h-3.5 text-primary" />
-                <span className="text-primary">Copied</span>
+                <span className="text-primary">{t('home.install.copied')}</span>
               </>
             ) : (
               <>
                 <Copy className="w-3.5 h-3.5" />
-                <span>Copy</span>
+                <span>{t('home.install.copy')}</span>
               </>
             )}
           </button>
@@ -132,18 +133,18 @@ export default function Home(): React.JSX.Element {
         <ol className="mt-4 space-y-3 text-sm text-text-muted">
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">1.</span>
-            <span>Paste this to your personal agent (Claude Code, Cursor, or any AI that can load skills)</span>
+            <span>{t('home.install.step1')}</span>
           </li>
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">2.</span>
-            <span>The agent fetches the SKILL.md — no auth needed, no local backend to run</span>
+            <span>{t('home.install.step2')}</span>
           </li>
           <li className="flex gap-3">
             <span className="text-accent font-bold min-w-[1.25rem]">3.</span>
             <span>
-              Ask it{' '}
-              <em className="text-text not-italic font-medium">"find me dinner in Hangzhou tomorrow"</em>
-              {' '}— watch A2A commerce happen
+              {t('home.install.step3.before')}
+              <em className="text-text not-italic font-medium">{t('home.install.step3.example')}</em>
+              {t('home.install.step3.after')}
             </span>
           </li>
         </ol>
@@ -151,9 +152,9 @@ export default function Home(): React.JSX.Element {
 
       {/* Fallback for users without an agent */}
       <p className="mt-8 text-sm text-text-muted text-center">
-        Don't have an AI agent?{' '}
+        {t('home.cta.noAgent.before')}
         <Link to="/demo" className="text-primary hover:text-primary-hover font-semibold inline-flex items-center gap-1">
-          Try the web demo
+          {t('home.cta.noAgent.link')}
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </p>
@@ -164,28 +165,22 @@ export default function Home(): React.JSX.Element {
           <div className="w-10 h-10 rounded-lg bg-primary-soft flex items-center justify-center mb-4">
             <Shield className="w-5 h-5 text-primary" strokeWidth={2.2} />
           </div>
-          <h3 className="text-text font-semibold mb-2">On-chain Identity</h3>
-          <p className="text-text-muted text-sm leading-relaxed">
-            Every merchant anchored on 0G Chain via ERC-8004. Identity is verifiable, portable, sovereign — no platform can de-list you.
-          </p>
+          <h3 className="text-text font-semibold mb-2">{t('home.pillar1.title')}</h3>
+          <p className="text-text-muted text-sm leading-relaxed">{t('home.pillar1.body')}</p>
         </article>
         <article className="p-6 rounded-2xl bg-surface border border-border hover:border-accent/40 hover:shadow-md hover:shadow-accent/5 transition-all">
           <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center mb-4">
             <CircleDollarSign className="w-5 h-5 text-accent" strokeWidth={2.2} />
           </div>
-          <h3 className="text-text font-semibold mb-2">x402 Native</h3>
-          <p className="text-text-muted text-sm leading-relaxed">
-            The first A2A registry with payment baked into HTTP. Agent pays agent at the edge, no take-rate, no 30% OTA margin.
-          </p>
+          <h3 className="text-text font-semibold mb-2">{t('home.pillar2.title')}</h3>
+          <p className="text-text-muted text-sm leading-relaxed">{t('home.pillar2.body')}</p>
         </article>
         <article className="p-6 rounded-2xl bg-surface border border-border hover:border-primary/40 hover:shadow-md hover:shadow-primary/5 transition-all">
           <div className="w-10 h-10 rounded-lg bg-primary-soft flex items-center justify-center mb-4">
             <Zap className="w-5 h-5 text-primary" strokeWidth={2.2} />
           </div>
-          <h3 className="text-text font-semibold mb-2">MCP / A2A Compatible</h3>
-          <p className="text-text-muted text-sm leading-relaxed">
-            Standard tool interface — any AI agent that speaks MCP can discover, verify, and transact. Zero custom SDK.
-          </p>
+          <h3 className="text-text font-semibold mb-2">{t('home.pillar3.title')}</h3>
+          <p className="text-text-muted text-sm leading-relaxed">{t('home.pillar3.body')}</p>
         </article>
       </section>
 

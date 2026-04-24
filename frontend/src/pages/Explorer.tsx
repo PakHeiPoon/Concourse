@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Info, TerminalSquare, ExternalLink, Code2, Globe, X, Play, Loader2, ChevronDown } from 'lucide-react'
 import OnChainBadge from '../components/OnChainBadge'
+import { useT } from '../i18n'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
@@ -206,6 +207,7 @@ function SkillTestModal({ merchant, onClose }: SkillTestModalProps) {
 }
 
 export default function Explorer() {
+  const { t, lang } = useT()
   const navigate = useNavigate()
   const [merchants, setMerchants] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -238,19 +240,19 @@ export default function Explorer() {
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Registry Explorer</h2>
-          <p className="text-slate-500 mt-2">Discover merchants and their on-chain AI Skills available on the network.</p>
+          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">{t('explorer.title')}</h2>
+          <p className="text-slate-500 mt-2">{t('explorer.subtitle')}</p>
         </div>
         <div className="flex items-center bg-white border border-slate-200 rounded-xl p-1.5 shadow-sm">
           <div className="px-3 text-slate-400">
             <MapPin className="w-4 h-4" />
           </div>
-          <select 
+          <select
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
             className="bg-transparent py-2 pr-8 text-sm font-medium text-slate-700 focus:outline-none cursor-pointer appearance-none"
           >
-            <option value="">All Cities Globally</option>
+            <option value="">{t('explorer.cityAll')}</option>
             <option value="hangzhou">Hangzhou (杭州)</option>
             <option value="shanghai">Shanghai (上海)</option>
             <option value="suzhou">Suzhou (苏州)</option>
@@ -302,23 +304,23 @@ export default function Explorer() {
                 </div>
               </div>
 
-              <h3 className="text-xl font-bold text-text mb-1 leading-tight group-hover:text-primary transition-colors">{m.name.en}</h3>
+              <h3 className="text-xl font-bold text-text mb-1 leading-tight group-hover:text-primary transition-colors">{m.name?.[lang] || m.name?.en}</h3>
               <p className="text-slate-500 text-sm mb-4 font-medium flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5" />
                 {m.location.city.charAt(0).toUpperCase() + m.location.city.slice(1)}, {m.location.country}
               </p>
-              
+
               <div className="bg-slate-50 p-3 rounded-xl mb-5 flex-grow">
                 <div className="flex items-start gap-2">
                   <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                  <p className="text-slate-600 text-sm line-clamp-2 leading-relaxed">{m.description.en}</p>
+                  <p className="text-slate-600 text-sm line-clamp-2 leading-relaxed">{m.description?.[lang] || m.description?.en}</p>
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                   <TerminalSquare className="w-3.5 h-3.5" />
-                  Available Agent Skills
+                  {t('explorer.agentSkills')}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {m.skills.slice(0, 3).map((skill: string) => (
@@ -339,7 +341,7 @@ export default function Explorer() {
                 className="w-full py-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-900 hover:border-slate-900 hover:text-white rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 group/btn"
               >
                 <Code2 className="w-4 h-4 text-slate-400 group-hover/btn:text-white transition-colors" />
-                <span>Test Skill API</span>
+                <span>{t('explorer.testSkillApi')}</span>
                 <ExternalLink className="w-4 h-4 opacity-0 -ml-4 group-hover/btn:opacity-100 group-hover/btn:ml-0 transition-all duration-300" />
               </button>
             </div>
@@ -347,8 +349,8 @@ export default function Explorer() {
           {merchants.length === 0 && (
             <div className="col-span-full flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-200 border-dashed">
               <Globe className="w-12 h-12 text-slate-300 mb-4" />
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No Merchants Found</h3>
-              <p className="text-slate-500">There are no registered merchants in the selected city yet.</p>
+              <h3 className="text-lg font-bold text-slate-900 mb-1">{t('explorer.emptyTitle')}</h3>
+              <p className="text-slate-500">{t('explorer.emptyBody')}</p>
             </div>
           )}
         </div>

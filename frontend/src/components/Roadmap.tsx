@@ -1,4 +1,5 @@
 import { CheckCircle2, Wrench, MapPinned } from 'lucide-react'
+import { useT } from '../i18n'
 
 type RoadmapStatus = 'live' | 'building' | 'planned'
 
@@ -61,13 +62,14 @@ const ITEMS: RoadmapItem[] = [
   },
 ]
 
-const STATUS_META: Record<RoadmapStatus, { label: string; cls: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }> = {
-  live:     { label: 'Live',     cls: 'bg-primary-soft text-primary border-primary/30',   icon: CheckCircle2 },
-  building: { label: 'Building', cls: 'bg-accent-soft text-accent border-accent/30',     icon: Wrench },
-  planned:  { label: 'Planned',  cls: 'bg-surface-2 text-text-muted border-border-strong', icon: MapPinned },
+const STATUS_META: Record<RoadmapStatus, { labelKey: string; cls: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }> }> = {
+  live:     { labelKey: 'roadmap.status.live',     cls: 'bg-primary-soft text-primary border-primary/30',   icon: CheckCircle2 },
+  building: { labelKey: 'roadmap.status.building', cls: 'bg-accent-soft text-accent border-accent/30',     icon: Wrench },
+  planned:  { labelKey: 'roadmap.status.planned',  cls: 'bg-surface-2 text-text-muted border-border-strong', icon: MapPinned },
 }
 
 export default function Roadmap(): React.JSX.Element {
+  const { t } = useT()
   const grouped: Record<RoadmapStatus, RoadmapItem[]> = {
     live:     ITEMS.filter(i => i.status === 'live'),
     building: ITEMS.filter(i => i.status === 'building'),
@@ -79,14 +81,12 @@ export default function Roadmap(): React.JSX.Element {
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 bg-text/5 border border-border px-3 py-1 rounded-full text-text-muted text-xs font-medium mb-4">
           <MapPinned className="w-3.5 h-3.5" />
-          <span>Roadmap</span>
+          <span>{t('roadmap.badge')}</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-bold text-text tracking-tight mb-3">
-          What's shipped, what's next
+          {t('roadmap.title')}
         </h2>
-        <p className="text-text-muted max-w-xl mx-auto">
-          Open registry · merchant agents · payments · reputation. Built in the open.
-        </p>
+        <p className="text-text-muted max-w-xl mx-auto">{t('roadmap.subtitle')}</p>
       </div>
 
       <div className="grid gap-8">
@@ -100,7 +100,7 @@ export default function Roadmap(): React.JSX.Element {
               <div className="flex items-center gap-2 mb-4">
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-bold uppercase tracking-wider ${meta.cls}`}>
                   <Icon className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  {meta.label}
+                  {t(meta.labelKey)}
                 </span>
                 <span className="h-px flex-1 bg-border" />
               </div>
