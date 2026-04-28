@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { BrowserProvider, Contract } from 'ethers'
-import { AlertCircle, CheckCircle2, Clock, ExternalLink, Loader2, ShieldCheck, Sparkles, Wallet } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Clock, ExternalLink, Loader2, Pencil, ShieldCheck, Sparkles, Wallet, X } from 'lucide-react'
 
 import InstallCredentialsCard from '../components/InstallCredentialsCard'
 import {
@@ -71,6 +71,28 @@ export default function MerchantSign() {
     tokenExpiresAt: string | null
   } | null>(null)
 
+  // Mutable copy of draft.payload — what actually gets sent on Sign.
+  // Owner can flip into edit mode and patch fields before committing
+  // anything on-chain (the on-chain anchor is permanent, so the
+  // "review and fix" step is critical owner-side UX).
+  const [formData, setFormData] = useState<DraftPayload | null>(null)
+  const [editing, setEditing] = useState<boolean>(false)
+
+  const updateField = <K extends keyof DraftPayload>(key: K, value: DraftPayload[K]) => {
+    setFormData(prev => (prev ? { ...prev, [key]: value } : prev))
+  }
+  const updateSpecific = (key: string, value: unknown) => {
+    setFormData(prev =>
+      prev ? { ...prev, specific_fields: { ...prev.specific_fields, [key]: value } } : prev,
+    )
+  }
+  const startEdit = () => setEditing(true)
+  const cancelEdit = () => {
+    setFormData(draft?.payload ?? null)
+    setEditing(false)
+  }
+  const saveEdit = () => setEditing(false)
+
   // ─── Load the draft ───
   useEffect(() => {
     if (!draftId) return
@@ -85,6 +107,7 @@ export default function MerchantSign() {
           const data = (await res.json()) as DraftView
           if (!cancelled) {
             setDraft(data)
+            setFormData(data.payload)
             // If already signed (refresh after success), restore result.
             // Note: auth_token is only visible to the first browser that
             // completed signing — a refresh in another tab sees null here,
@@ -139,17 +162,23 @@ export default function MerchantSign() {
   }
 
   const signAndRegister = async () => {
-    if (!draft || !wallet || !draftId) return
+    if (!draft || !wallet || !draftId || !formData) return
+    if (editing) {
+      setSignError('Please save your edits before signing.')
+      return
+    }
     setSignError('')
     setPhase('off-chain')
 
     try {
       // Step 1: save off-chain (creates merchant row, returns did + profile_hash)
+      // Use formData (post-edit) so the owner's last-mile changes are what
+      // actually get hashed and anchored on-chain.
       const createRes = await fetch(`${API_BASE}/v1/merchants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...draft.payload,
+          ...formData,
           wallet_address: wallet,
           profile_hash: null,
           profile_uri: null,
@@ -205,7 +234,7 @@ export default function MerchantSign() {
       try {
         const tx = await registry.register(
           did,
-          draft.payload.merchant_type,
+          formData.merchant_type,
           profileHash,
           `supabase://${merchantId}`,
           skillEndpoint,
@@ -350,7 +379,6 @@ export default function MerchantSign() {
     )
   }
 
-  const p = draft.payload
   const isSignedFromBackend = draft.status === 'signed'
 
   return (
@@ -382,59 +410,20 @@ export default function MerchantSign() {
         </div>
       )}
 
-      {/* Preview card */}
-      <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden mb-6">
-        <div className="px-6 py-4 border-b border-border bg-surface">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-            {t('sign.preview')}
-          </h2>
-        </div>
-        <div className="p-6">
-          <h3 className="text-2xl font-bold text-text mb-1">{p.name}</h3>
-          <p className="text-text-muted text-sm mb-4">{p.description}</p>
-
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div>
-              <dt className="text-text-muted text-xs uppercase tracking-wider">{t('sign.field.type')}</dt>
-              <dd className="text-text font-medium mt-0.5 capitalize">{p.merchant_type}</dd>
-            </div>
-            <div>
-              <dt className="text-text-muted text-xs uppercase tracking-wider">{t('sign.field.city')}</dt>
-              <dd className="text-text font-medium mt-0.5">{p.city}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-text-muted text-xs uppercase tracking-wider">{t('sign.field.address')}</dt>
-              <dd className="text-text font-medium mt-0.5">{p.address}</dd>
-            </div>
-            <div>
-              <dt className="text-text-muted text-xs uppercase tracking-wider">{t('sign.field.contact')}</dt>
-              <dd className="text-text font-medium mt-0.5">
-                {p.contact_phone}
-                {p.contact_email ? ` · ${p.contact_email}` : ''}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-text-muted text-xs uppercase tracking-wider">{t('sign.field.hours')}</dt>
-              <dd className="text-text font-medium mt-0.5">{p.opening_hours}</dd>
-            </div>
-            {p.supported_skills.length > 0 && (
-              <div className="sm:col-span-2">
-                <dt className="text-text-muted text-xs uppercase tracking-wider mb-1">{t('sign.field.skills')}</dt>
-                <dd className="flex flex-wrap gap-1.5">
-                  {p.supported_skills.map(s => (
-                    <span
-                      key={s}
-                      className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-primary/10 text-primary border border-primary/20"
-                    >
-                      {s}
-                    </span>
-                  ))}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      </div>
+      {/* Preview / Edit card — owner reviews and patches anything wrong
+          before the signature commits the profile_hash on-chain forever. */}
+      {formData && (
+        <PreviewCard
+          formData={formData}
+          editing={editing && !isSignedFromBackend}
+          isSignedFromBackend={isSignedFromBackend}
+          updateField={updateField}
+          updateSpecific={updateSpecific}
+          startEdit={startEdit}
+          saveEdit={saveEdit}
+          cancelEdit={cancelEdit}
+        />
+      )}
 
       {/* Sign action */}
       {!isSignedFromBackend && (
@@ -494,5 +483,531 @@ export default function MerchantSign() {
         Chain ID {ZERO_G_CHAIN.chainId} · {ZERO_G_CHAIN.name}
       </p>
     </div>
+  )
+}
+
+// ─── Preview / Edit Card ────────────────────────────────────────────────
+// Two modes:
+//   - Read-only: dl/dt/dd grid showing every field the agent prepared
+//   - Edit: every field becomes an input; arrays use comma-separated text
+//
+// The editable fields cover the full /v1/merchants schema including the
+// hotel-specific specific_fields. For other merchant types we fall back
+// to a generic key-value editor on specific_fields so any schema works.
+
+type FieldEditorProps = {
+  formData: DraftPayload
+  editing: boolean
+  isSignedFromBackend: boolean
+  updateField: <K extends keyof DraftPayload>(key: K, value: DraftPayload[K]) => void
+  updateSpecific: (key: string, value: unknown) => void
+  startEdit: () => void
+  saveEdit: () => void
+  cancelEdit: () => void
+}
+
+function PreviewCard({
+  formData,
+  editing,
+  isSignedFromBackend,
+  updateField,
+  updateSpecific,
+  startEdit,
+  saveEdit,
+  cancelEdit,
+}: FieldEditorProps) {
+  const { t } = useT()
+  const isHotel = formData.merchant_type === 'hotel'
+
+  // Helpers — comma-separated string ↔ string[] for arrays.
+  const arrToStr = (a: string[]): string => (a ?? []).join(', ')
+  const strToArr = (s: string): string[] =>
+    s.split(',').map(x => x.trim()).filter(Boolean)
+
+  return (
+    <div className="rounded-2xl border border-border bg-white shadow-sm overflow-hidden mb-6">
+      {/* Header with edit / save / cancel */}
+      <div className="px-6 py-4 border-b border-border bg-surface flex items-center justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+          {editing ? t('sign.editing') : t('sign.preview')}
+        </h2>
+        {!isSignedFromBackend && (
+          editing ? (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={cancelEdit}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-text-muted hover:text-text bg-surface-2 hover:bg-border border border-border transition-colors"
+              >
+                <X className="w-3 h-3" />
+                {t('sign.cancel')}
+              </button>
+              <button
+                onClick={saveEdit}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold bg-primary hover:bg-primary-dark text-white transition-colors"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                {t('sign.save')}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={startEdit}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold text-primary hover:text-white hover:bg-primary border border-primary/40 transition-colors"
+            >
+              <Pencil className="w-3 h-3" />
+              {t('sign.edit')}
+            </button>
+          )
+        )}
+      </div>
+
+      <div className="p-6 space-y-6">
+        {!editing && !isSignedFromBackend && (
+          <p className="text-xs text-text-muted bg-surface-2 border border-border rounded-lg p-3 leading-relaxed">
+            {t('sign.editHint')}
+          </p>
+        )}
+
+        {/* Section: Identity */}
+        <Section title={t('sign.section.basic')}>
+          <Field label={t('sign.field.name')} colSpan={2}>
+            {editing ? (
+              <input
+                value={formData.name}
+                onChange={e => updateField('name', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              <h3 className="text-xl font-bold text-text">{formData.name}</h3>
+            )}
+          </Field>
+          <Field label={t('sign.field.description')} colSpan={2}>
+            {editing ? (
+              <textarea
+                value={formData.description}
+                onChange={e => updateField('description', e.target.value)}
+                rows={4}
+                className={`${inputCls} resize-y`}
+              />
+            ) : (
+              <p className="text-text-muted text-sm whitespace-pre-line">{formData.description}</p>
+            )}
+          </Field>
+        </Section>
+
+        {/* Section: Type & Location */}
+        <Section title={t('sign.section.location')}>
+          <Field label={t('sign.field.type')}>
+            {editing ? (
+              <select
+                value={formData.merchant_type}
+                onChange={e => updateField('merchant_type', e.target.value)}
+                className={inputCls}
+              >
+                <option value="hotel">hotel</option>
+                <option value="restaurant">restaurant</option>
+                <option value="attraction">attraction</option>
+                <option value="shop">shop</option>
+              </select>
+            ) : (
+              <span className="capitalize">{formData.merchant_type}</span>
+            )}
+          </Field>
+          <Field label={t('sign.field.city')}>
+            {editing ? (
+              <input
+                value={formData.city}
+                onChange={e => updateField('city', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.city
+            )}
+          </Field>
+          <Field label={t('sign.field.country')}>
+            {editing ? (
+              <input
+                value={formData.country}
+                onChange={e => updateField('country', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.country
+            )}
+          </Field>
+          <Field label={t('sign.field.coords')}>
+            {editing ? (
+              <div className="flex gap-2">
+                <input
+                  value={formData.latitude ?? ''}
+                  onChange={e => updateField('latitude', e.target.value === '' ? null : Number(e.target.value))}
+                  placeholder="lat"
+                  className={inputCls}
+                />
+                <input
+                  value={formData.longitude ?? ''}
+                  onChange={e => updateField('longitude', e.target.value === '' ? null : Number(e.target.value))}
+                  placeholder="lng"
+                  className={inputCls}
+                />
+              </div>
+            ) : formData.latitude != null && formData.longitude != null ? (
+              <span className="font-mono text-xs">
+                {formData.latitude}, {formData.longitude}
+              </span>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+          <Field label={t('sign.field.address')} colSpan={2}>
+            {editing ? (
+              <input
+                value={formData.address}
+                onChange={e => updateField('address', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.address
+            )}
+          </Field>
+        </Section>
+
+        {/* Section: Contact & hours */}
+        <Section title={t('sign.section.contact')}>
+          <Field label={t('sign.field.phone')}>
+            {editing ? (
+              <input
+                value={formData.contact_phone}
+                onChange={e => updateField('contact_phone', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.contact_phone
+            )}
+          </Field>
+          <Field label={t('sign.field.email')}>
+            {editing ? (
+              <input
+                value={formData.contact_email}
+                onChange={e => updateField('contact_email', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.contact_email
+            )}
+          </Field>
+          <Field label={t('sign.field.hours')}>
+            {editing ? (
+              <input
+                value={formData.opening_hours}
+                onChange={e => updateField('opening_hours', e.target.value)}
+                className={inputCls}
+              />
+            ) : (
+              formData.opening_hours
+            )}
+          </Field>
+          <Field label={t('sign.field.website')}>
+            {editing ? (
+              <input
+                value={formData.website_url ?? ''}
+                onChange={e => updateField('website_url', e.target.value || null)}
+                placeholder="https://"
+                className={inputCls}
+              />
+            ) : formData.website_url ? (
+              <a href={formData.website_url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate inline-block max-w-full">
+                {formData.website_url}
+              </a>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+        </Section>
+
+        {/* Section: Classification */}
+        <Section title={t('sign.section.classification')}>
+          <Field label={t('sign.field.priceLevel')}>
+            {editing ? (
+              <select
+                value={formData.price_level ?? ''}
+                onChange={e => updateField('price_level', e.target.value === '' ? null : Number(e.target.value))}
+                className={inputCls}
+              >
+                <option value="">—</option>
+                {[1, 2, 3, 4, 5].map(n => (
+                  <option key={n} value={n}>{'¥'.repeat(n)} ({n})</option>
+                ))}
+              </select>
+            ) : formData.price_level ? (
+              <span>{'¥'.repeat(formData.price_level)} ({formData.price_level})</span>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+          <Field label={t('sign.field.languages')}>
+            {editing ? (
+              <input
+                value={arrToStr(formData.languages_supported)}
+                onChange={e => updateField('languages_supported', strToArr(e.target.value))}
+                placeholder={t('sign.commaHint')}
+                className={inputCls}
+              />
+            ) : formData.languages_supported.length > 0 ? (
+              <span className="font-mono text-xs">{formData.languages_supported.join(', ')}</span>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+          <Field label={t('sign.field.tags')} colSpan={2}>
+            {editing ? (
+              <input
+                value={arrToStr(formData.tags)}
+                onChange={e => updateField('tags', strToArr(e.target.value))}
+                placeholder={t('sign.commaHint')}
+                className={inputCls}
+              />
+            ) : formData.tags.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {formData.tags.map(tag => (
+                  <span key={tag} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-surface-2 text-text-muted border border-border">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+        </Section>
+
+        {/* Section: Skills */}
+        <Section title={t('sign.section.skills')}>
+          <Field label={t('sign.field.skills')} colSpan={2}>
+            {editing ? (
+              <input
+                value={arrToStr(formData.supported_skills)}
+                onChange={e => updateField('supported_skills', strToArr(e.target.value))}
+                placeholder={t('sign.commaHint')}
+                className={`${inputCls} font-mono`}
+              />
+            ) : formData.supported_skills.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {formData.supported_skills.map(s => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-mono bg-primary/10 text-primary border border-primary/20"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-text-muted">—</span>
+            )}
+          </Field>
+        </Section>
+
+        {/* Section: Specifics — type-aware UI for hotels, generic KV otherwise */}
+        <Section title={t('sign.section.specifics')}>
+          {isHotel ? (
+            <HotelSpecifics
+              specific={formData.specific_fields as Record<string, unknown>}
+              editing={editing}
+              updateSpecific={updateSpecific}
+              arrToStr={arrToStr}
+              strToArr={strToArr}
+            />
+          ) : (
+            <GenericSpecifics
+              specific={formData.specific_fields as Record<string, unknown>}
+              editing={editing}
+              updateSpecific={updateSpecific}
+            />
+          )}
+        </Section>
+      </div>
+    </div>
+  )
+}
+
+const inputCls =
+  'w-full px-3 py-2 text-sm bg-white border border-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors'
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <h4 className="text-[10px] font-bold uppercase tracking-widest text-text-muted mb-3 pb-1 border-b border-border">
+        {title}
+      </h4>
+      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">{children}</dl>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  colSpan = 1,
+  children,
+}: {
+  label: string
+  colSpan?: 1 | 2
+  children: React.ReactNode
+}) {
+  return (
+    <div className={colSpan === 2 ? 'sm:col-span-2' : ''}>
+      <dt className="text-text-muted text-xs uppercase tracking-wider mb-1">{label}</dt>
+      <dd className="text-text font-medium">{children}</dd>
+    </div>
+  )
+}
+
+function HotelSpecifics({
+  specific,
+  editing,
+  updateSpecific,
+  arrToStr,
+  strToArr,
+}: {
+  specific: Record<string, unknown>
+  editing: boolean
+  updateSpecific: (key: string, value: unknown) => void
+  arrToStr: (a: string[]) => string
+  strToArr: (s: string) => string[]
+}) {
+  const star = typeof specific.star_rating === 'number' ? specific.star_rating : null
+  const rooms = Array.isArray(specific.room_types) ? (specific.room_types as string[]) : []
+  const checkIn = typeof specific.check_in_time === 'string' ? specific.check_in_time : ''
+  const checkOut = typeof specific.check_out_time === 'string' ? specific.check_out_time : ''
+  const breakfast = Boolean(specific.breakfast_included)
+  const parking = Boolean(specific.parking_available)
+
+  return (
+    <>
+      <Field label="Star rating">
+        {editing ? (
+          <select
+            value={star ?? ''}
+            onChange={e => updateSpecific('star_rating', e.target.value === '' ? null : Number(e.target.value))}
+            className={inputCls}
+          >
+            <option value="">—</option>
+            {[1, 2, 3, 4, 5].map(n => (
+              <option key={n} value={n}>{'★'.repeat(n)} ({n})</option>
+            ))}
+          </select>
+        ) : star ? (
+          <span>{'★'.repeat(star)} ({star})</span>
+        ) : (
+          <span className="text-text-muted">—</span>
+        )}
+      </Field>
+      <Field label="Check-in / Check-out">
+        {editing ? (
+          <div className="flex gap-2">
+            <input
+              value={checkIn}
+              onChange={e => updateSpecific('check_in_time', e.target.value)}
+              placeholder="15:00"
+              className={inputCls}
+            />
+            <input
+              value={checkOut}
+              onChange={e => updateSpecific('check_out_time', e.target.value)}
+              placeholder="12:00"
+              className={inputCls}
+            />
+          </div>
+        ) : (
+          <span className="font-mono text-xs">{checkIn || '—'} / {checkOut || '—'}</span>
+        )}
+      </Field>
+      <Field label="Room types" colSpan={2}>
+        {editing ? (
+          <input
+            value={arrToStr(rooms)}
+            onChange={e => updateSpecific('room_types', strToArr(e.target.value))}
+            placeholder="Deluxe, Suite, Presidential"
+            className={inputCls}
+          />
+        ) : rooms.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {rooms.map(r => (
+              <span key={r} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-accent/10 text-accent border border-accent/20">
+                {r}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span className="text-text-muted">—</span>
+        )}
+      </Field>
+      <Field label="Breakfast included">
+        {editing ? (
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={breakfast}
+              onChange={e => updateSpecific('breakfast_included', e.target.checked)}
+              className="rounded border-border text-primary focus:ring-primary/20"
+            />
+            <span>{breakfast ? 'Yes' : 'No'}</span>
+          </label>
+        ) : (
+          <span>{breakfast ? '✓ Yes' : '✗ No'}</span>
+        )}
+      </Field>
+      <Field label="Parking available">
+        {editing ? (
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={parking}
+              onChange={e => updateSpecific('parking_available', e.target.checked)}
+              className="rounded border-border text-primary focus:ring-primary/20"
+            />
+            <span>{parking ? 'Yes' : 'No'}</span>
+          </label>
+        ) : (
+          <span>{parking ? '✓ Yes' : '✗ No'}</span>
+        )}
+      </Field>
+    </>
+  )
+}
+
+function GenericSpecifics({
+  specific,
+  editing,
+  updateSpecific,
+}: {
+  specific: Record<string, unknown>
+  editing: boolean
+  updateSpecific: (key: string, value: unknown) => void
+}) {
+  const entries = Object.entries(specific ?? {})
+  if (entries.length === 0) {
+    return (
+      <Field label="—" colSpan={2}>
+        <span className="text-text-muted text-xs italic">No type-specific fields</span>
+      </Field>
+    )
+  }
+  return (
+    <>
+      {entries.map(([key, value]) => (
+        <Field key={key} label={key}>
+          {editing ? (
+            <input
+              value={String(value ?? '')}
+              onChange={e => updateSpecific(key, e.target.value)}
+              className={inputCls}
+            />
+          ) : (
+            <span className="text-xs font-mono break-all">{String(value)}</span>
+          )}
+        </Field>
+      ))}
+    </>
   )
 }
