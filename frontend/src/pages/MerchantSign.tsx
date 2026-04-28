@@ -193,15 +193,55 @@ export default function MerchantSign() {
 
       const signer = await provider.getSigner()
       const registry = new Contract(MERCHANT_REGISTRY_ADDRESS, MERCHANT_REGISTRY_ABI, signer)
-      const tx = await registry.register(
-        did,
-        draft.payload.merchant_type,
-        profileHash,
-        `supabase://${merchantId}`,
-        skillEndpoint,
-      )
-      const receipt = await tx.wait()
-      const txHash: string = receipt.hash
+
+      // Known ethers v6 + 0G testnet RPC quirk: eth_sendTransaction can
+      // throw "could not coalesce error / Transaction failed" with an
+      // empty originalError, even though the tx actually broadcasts and
+      // mines successfully. We optimistically attempt the standard call,
+      // then on that specific error pattern we verify on-chain state
+      // (getMerchant) before declaring failure — the user shouldn't see
+      // a red error toast for a tx that actually went through.
+      let txHash: string = ''
+      try {
+        const tx = await registry.register(
+          did,
+          draft.payload.merchant_type,
+          profileHash,
+          `supabase://${merchantId}`,
+          skillEndpoint,
+        )
+        const receipt = await tx.wait()
+        txHash = receipt.hash
+      } catch (chainErr: unknown) {
+        const errMsg = chainErr instanceof Error ? chainErr.message : String(chainErr)
+        const isLikelyFalsePositive =
+          errMsg.includes('could not coalesce') ||
+          errMsg.includes('Transaction failed')
+
+        if (!isLikelyFalsePositive) throw chainErr
+
+        // Wait a few seconds for the tx to propagate, then verify via
+        // a read-only contract instance.
+        await new Promise(resolve => setTimeout(resolve, 4000))
+        const readContract = new Contract(MERCHANT_REGISTRY_ADDRESS, MERCHANT_REGISTRY_ABI, provider)
+        const stored = await readContract.getMerchant(did)
+        if (stored.owner.toLowerCase() !== wallet.toLowerCase()) {
+          // Genuine failure — surface the original error.
+          throw chainErr
+        }
+        // Tx actually went through. Try to recover the hash from the
+        // MerchantRegistered event (best-effort — fall back to empty).
+        try {
+          const events = await readContract.queryFilter(
+            readContract.filters.MerchantRegistered(did),
+            -2000,
+          )
+          txHash = events[events.length - 1]?.transactionHash ?? ''
+        } catch {
+          /* ignore — we know the merchant is on-chain */
+        }
+        console.warn('Recovered from ethers/0G false-positive — merchant is on-chain', { did, txHash })
+      }
 
       // Step 3: bind — free personal_sign that mints an opaque bearer
       // token. This is what lets the agent PATCH without the owner's
