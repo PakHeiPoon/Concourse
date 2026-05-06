@@ -143,18 +143,46 @@ apps/agent/
 ## Scripts
 
 ```bash
-pnpm dev          # tsx watch
-pnpm test         # vitest run
-pnpm typecheck    # strict tsc, no emit
-pnpm build        # emit dist/
-pnpm setup        # seed sample inventory
-pnpm sync-card    # (Phase A.4) register/update agent-card on-chain
+pnpm dev                       # tsx watch
+pnpm test                      # vitest run
+pnpm typecheck                 # strict tsc, no emit
+pnpm build                     # emit dist/
+pnpm setup                     # seed sample inventory
+pnpm sync-card -- --dry-run    # build card + print hash, no chain calls
+pnpm sync-card                 # broadcast register/update to IdentityRegistry
 ```
+
+### sync-card — on-chain registration
+
+`pnpm sync-card --dry-run` works without any keys. It rebuilds the
+agent-card from your local store, computes the canonical-JSON SHA-256,
+and prints both. Use it whenever you change inventory or settings to
+preview the hash that would land on chain.
+
+`pnpm sync-card` (live mode) requires:
+
+- `IDENTITY_REGISTRY` — deployed contract address (from
+  `contracts/erc8004/script/Deploy.s.sol`)
+- `RPC_URL` — Base Sepolia / mainnet endpoint
+- `SYNC_PRIVATE_KEY` — owner wallet (testnet only — see .env.example)
+- `AGENT_CARD_URI` — optional override; defaults to
+  `${PUBLIC_URL}/.well-known/agent-card.json`
+
+Behavior:
+
+| `AGENT_ID` in .env | On-chain hash matches local | Action |
+|---|---|---|
+| empty | n/a | `register(uri, hash)`, parse `AgentRegistered` event, write `AGENT_ID` back to .env |
+| set | yes | no-op (saves gas) |
+| set | no | `update(agentId, uri, newHash)` |
+
+The on-chain hash and the `X-Card-SHA256` header on the live URL
+**must match** — re-run `sync-card` after every settings change.
 
 ## Roadmap
 
 - **Phase A** ✅ template + agent-card + 5 skills + auth
-- **Phase A.4** sync-card → ERC-8004 IdentityRegistry on Base Sepolia
+- **Phase A.4** ✅ sync-card → ERC-8004 IdentityRegistry on Base Sepolia
 - **Phase B** x402 middleware + BookingEscrow integration
 - **Phase C** ReputationRegistry: settled bookings auto-authorize feedback
 - **Phase D** validator marketplace (ValidationRegistry)
