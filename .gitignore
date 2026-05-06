@@ -48,6 +48,14 @@ contracts/erc8004/cache/
 contracts/erc8004/broadcast/
 contracts/erc8004/lib/
 
+# merchant-agent-template — runtime artifacts (per-merchant SQLite + node_modules)
+merchant-agent-template/**/node_modules/
+merchant-agent-template/**/dist/
+merchant-agent-template/**/data/*.db
+merchant-agent-template/**/data/*.db-*
+merchant-agent-template/**/.env
+merchant-agent-template/**/coverage/
+
 # Internal-only scripts (contain wallet addresses + seed data, not for public)
 # Note: match files (`/*`) not the directory (`/`) — with `/`, negations inside
 # don't work because git never descends into an ignored directory.
