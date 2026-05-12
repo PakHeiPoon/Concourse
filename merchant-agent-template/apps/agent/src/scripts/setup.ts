@@ -53,9 +53,13 @@ const SETTINGS: MerchantSettings = {
   payment: {
     chain:           'base-sepolia',
     chainId:         84532,
-    payoutAddress:   process.env.PAYOUT_ADDRESS
-                  ?? process.env.AGENT_OWNER_ADDRESS
-                  ?? '0x0000000000000000000000000000000000000000',
+    // `||` (not `??`) so empty strings from a partially-filled .env fall
+    // through to the next source — otherwise PAYOUT_ADDRESS="" (a common
+    // .env mistake) silently overrides AGENT_OWNER_ADDRESS and breaks
+    // the agent-card hash invariant.
+    payoutAddress:   (process.env.PAYOUT_ADDRESS
+                   || process.env.AGENT_OWNER_ADDRESS
+                   || '0x0000000000000000000000000000000000000000').trim(),
     currency:        'USDC',
     currencyAddress: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
     // BookingEscrow gets filled in once Phase B ships:

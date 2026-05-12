@@ -2,33 +2,40 @@
  * sync-card — register or update this merchant's agent-card on the
  * ERC-8004 IdentityRegistry contract.
  *
- *   pnpm sync-card --dry-run    # build card, print hash + calldata, no tx
- *   pnpm sync-card               # actually broadcast (needs SYNC_PRIVATE_KEY)
+ *   pnpm sync-card --dry-run           # fetch live URL + show what would land on chain
+ *   pnpm sync-card                      # actually broadcast (needs SYNC_PRIVATE_KEY)
+ *   pnpm sync-card --from-local         # compute hash from LOCAL store (legacy / debug)
  *
- * Flow
- * ────
- *   1. Load agent-card from local store + skill loader
- *   2. Compute canonical-JSON SHA-256 hash
- *   3. If AGENT_ID is set: read on-chain hash; skip tx if equal, else
- *      send IdentityRegistry.update(agentId, uri, newHash)
- *   4. If AGENT_ID is empty: send IdentityRegistry.register(uri, hash),
- *      parse the AgentRegistered event, append AGENT_ID=<id> to .env
+ * Architecture
+ * ────────────
+ * The on-chain hash MUST commit to the bytes the URL actually serves.
+ * Earlier versions of this script computed the hash from the local
+ * SQLite store, but local and deployed stores drift (different env
+ * vars, separate seedings, etc.) and the local hash ≠ live hash silently
+ * breaks the verification invariant.
+ *
+ * Default behavior (live-truth):
+ *   1. GET the AGENT_CARD_URI, read body bytes
+ *   2. SHA-256 those bytes → that IS the hash that goes on chain
+ *   3. Sanity-check: the server's X-Card-SHA256 header must equal it
+ *   4. Compare against on-chain hash; register / update / no-op
  *
  * Required env vars (live mode):
- *   RPC_URL                 — JSON-RPC endpoint (Base Sepolia / mainnet)
- *   IDENTITY_REGISTRY       — deployed contract address
- *   SYNC_PRIVATE_KEY        — agent owner wallet (do NOT reuse mainnet keys)
- *   AGENT_CARD_URI          — public URL of the agent-card (defaults to
- *                             `${PUBLIC_URL}/.well-known/agent-card.json`)
+ *   RPC_URL                — JSON-RPC endpoint
+ *   IDENTITY_REGISTRY      — deployed contract address
+ *   SYNC_PRIVATE_KEY       — agent owner wallet
+ *   PUBLIC_URL or AGENT_CARD_URI — where the card is served
  *
  * Optional:
- *   AGENT_ID                — set after first register; triggers update path
- *   --dry-run               — skip all chain reads/writes
+ *   AGENT_ID               — set after first register; triggers update path
+ *   --dry-run              — skip all chain writes (reads + URL fetch still happen)
+ *   --from-local           — use local store instead of live URL (debug only)
  */
 
 import 'dotenv/config';
 import { readFileSync, appendFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 import {
   createPublicClient, createWalletClient, http, parseAbi, parseEventLogs,
@@ -57,42 +64,100 @@ interface SyncResult {
   agentId:     bigint | null;
   txHash:      Hex | null;
   action:      'noop' | 'register' | 'update' | 'dry-run';
+  source:      'live-url' | 'local-store';
+}
+
+async function fetchLiveCardHash(uri: string): Promise<{ hash: Hex; bytes: number; headerHash: string | null }> {
+  const res = await fetch(uri);
+  if (!res.ok) throw new Error(`fetch ${uri} → HTTP ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const computed = ('0x' + createHash('sha256').update(buf).digest('hex')) as Hex;
+  const headerHash = res.headers.get('x-card-sha256');
+  if (headerHash && headerHash.toLowerCase() !== computed.toLowerCase()) {
+    throw new Error(
+      `server is dishonest: body SHA-256 = ${computed} but X-Card-SHA256 header = ${headerHash}.\n` +
+      `  fix your agent's response (the header must match the body)`,
+    );
+  }
+  return { hash: computed, bytes: buf.length, headerHash };
+}
+
+function computeLocalCardHash(
+  store: SQLiteStore,
+  config: ReturnType<typeof loadConfig>,
+): Promise<{ hash: Hex; bytes: number }> {
+  return store.getSettings().then((settings) => {
+    const card = buildAgentCard({
+      config, settings, skills,
+      agentVersion: (packageJson as { version: string }).version,
+    });
+    const json = canonicalJson(card);
+    return {
+      hash:  cardHash(card) as Hex,
+      bytes: Buffer.byteLength(json, 'utf-8'),
+    };
+  });
 }
 
 async function main(): Promise<void> {
   const dryRun = process.argv.includes('--dry-run');
+  const useLocal = process.argv.includes('--from-local');
   const config = loadConfig();
 
   const dbPath = (process.env.STORE_URL ?? 'file:./data/agent.db').replace(/^file:/, '');
   const store = new SQLiteStore(dbPath);
 
   try {
-    // ── 1. Build canonical agent-card + hash ─────────────────────────
-    const settings = await store.getSettings();
-    const card = buildAgentCard({
-      config, settings, skills,
-      agentVersion: (packageJson as { version: string }).version,
-    });
-    const json = canonicalJson(card);
-    const hash = cardHash(card) as Hex;          // 0x-prefixed 32-byte
-    const uri  = process.env.AGENT_CARD_URI
-              ?? `${config.publicUrl}/.well-known/agent-card.json`;
+    const uri = process.env.AGENT_CARD_URI
+             || `${config.publicUrl}/.well-known/agent-card.json`;
 
-    console.log('agent-card');
-    console.log(`  uri:   ${uri}`);
-    console.log(`  hash:  ${hash}`);
-    console.log(`  bytes: ${Buffer.byteLength(json)} (canonical JSON)`);
+    let hash: Hex;
+    let bytes: number;
+    let source: 'live-url' | 'local-store';
+
+    if (useLocal) {
+      const r = await computeLocalCardHash(store, config);
+      hash = r.hash; bytes = r.bytes; source = 'local-store';
+      console.log('source: LOCAL STORE  (--from-local; for debug only)');
+    } else {
+      const r = await fetchLiveCardHash(uri);
+      hash = r.hash; bytes = r.bytes; source = 'live-url';
+      console.log('source: LIVE URL     (server-attested, header matches body)');
+    }
+
+    console.log(`uri:    ${uri}`);
+    console.log(`hash:   ${hash}`);
+    console.log(`bytes:  ${bytes}`);
     console.log('');
 
-    // ── 2. Dry-run: stop here ────────────────────────────────────────
+    // Sanity warning: when using live mode, also compute local hash and warn
+    // if they differ — that means the local store will drift from chain on
+    // next deploy, and you should re-seed before redeploying.
+    if (!useLocal) {
+      try {
+        const local = await computeLocalCardHash(store, config);
+        if (local.hash.toLowerCase() !== hash.toLowerCase()) {
+          console.log('⚠ local store hash differs from live URL:');
+          console.log(`    local: ${local.hash}`);
+          console.log(`    live:  ${hash}`);
+          console.log('  This is fine for register/update (we use live as truth),');
+          console.log('  but means re-deploying with local settings would change the hash.');
+          console.log('  Re-seed local (pnpm setup) or align env vars before re-deploying.');
+          console.log('');
+        }
+      } catch { /* local store may not be seeded — ignore */ }
+    }
+
     if (dryRun) {
-      console.log('--dry-run set — skipping chain calls.');
-      printResult({ hash, uri, agentId: config.agentId !== null ? BigInt(config.agentId) : null,
-                    txHash: null, action: 'dry-run' });
+      console.log('--dry-run set — skipping chain writes.');
+      printResult({
+        hash, uri, source,
+        agentId: config.agentId !== null ? BigInt(config.agentId) : null,
+        txHash: null, action: 'dry-run',
+      });
       return;
     }
 
-    // ── 3. Live mode preflight ───────────────────────────────────────
     if (!config.identityRegistry) throw new Error('IDENTITY_REGISTRY env var is not set');
     const pk = process.env.SYNC_PRIVATE_KEY as Hex | undefined;
     if (!pk || !/^0x[0-9a-fA-F]{64}$/.test(pk)) {
@@ -111,7 +176,6 @@ async function main(): Promise<void> {
     console.log(`registry: ${registry}`);
     console.log('');
 
-    // ── 4. Update path ───────────────────────────────────────────────
     if (config.agentId !== null) {
       const agentId = BigInt(config.agentId);
       const onchain = await publicClient.readContract({
@@ -121,9 +185,9 @@ async function main(): Promise<void> {
       if (owner.toLowerCase() !== account.address.toLowerCase()) {
         throw new Error(`AGENT_ID ${agentId} is owned by ${owner}, not signer ${account.address}`);
       }
-      if (onchainHash === hash) {
+      if (onchainHash.toLowerCase() === hash.toLowerCase()) {
         console.log(`agentId ${agentId} already at hash ${hash} — no-op.`);
-        printResult({ hash, uri, agentId, txHash: null, action: 'noop' });
+        printResult({ hash, uri, source, agentId, txHash: null, action: 'noop' });
         return;
       }
       console.log(`updating agentId ${agentId}: ${onchainHash} -> ${hash}`);
@@ -134,11 +198,10 @@ async function main(): Promise<void> {
       console.log(`tx:       ${txHash}`);
       const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
       console.log(`status:   ${receipt.status}  (block ${receipt.blockNumber})`);
-      printResult({ hash, uri, agentId, txHash, action: 'update' });
+      printResult({ hash, uri, source, agentId, txHash, action: 'update' });
       return;
     }
 
-    // ── 5. Register path ─────────────────────────────────────────────
     console.log('registering new agent…');
     const txHash = await walletClient.writeContract({
       address: registry, abi: REGISTRY_ABI, functionName: 'register',
@@ -157,7 +220,7 @@ async function main(): Promise<void> {
 
     appendAgentIdToEnv(newAgentId);
     console.log(`agentId:  ${newAgentId} (written to .env)`);
-    printResult({ hash, uri, agentId: newAgentId, txHash, action: 'register' });
+    printResult({ hash, uri, source, agentId: newAgentId, txHash, action: 'register' });
   } finally {
     store.close();
   }
@@ -167,6 +230,7 @@ function printResult(r: SyncResult): void {
   console.log('');
   console.log('result:');
   console.log(`  action:   ${r.action}`);
+  console.log(`  source:   ${r.source}`);
   console.log(`  agentId:  ${r.agentId ?? '(none)'}`);
   console.log(`  hash:     ${r.hash}`);
   if (r.txHash) console.log(`  txHash:   ${r.txHash}`);

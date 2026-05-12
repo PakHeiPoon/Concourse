@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.local
+**/data/*.db
+**/data/*.db-*
+**/coverage
+**/.git
+**/.DS_Store
+**/*.log
+**/tests
+**/tsconfig.tsbuildinfo

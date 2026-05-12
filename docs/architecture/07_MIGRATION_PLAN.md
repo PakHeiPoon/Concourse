@@ -10,6 +10,58 @@ some have hard dependencies.
 
 ---
 
+## 0. Execution status (2026-05-09)
+
+Phase A is **closed**. The plan below describes intent; this section
+describes reality. When the two diverge, this section is authoritative.
+
+### Phase A — shipped
+
+| Sub-phase | What landed | Commit / proof |
+|---|---|---|
+| **A.2 Contracts** | `IdentityRegistry`, `ReputationRegistry`, `ValidationRegistry` deployed + verified on Base Sepolia | `d9957ee` · [Basescan](https://sepolia.basescan.org/address/0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f#code) |
+| **A.3 Template** | `merchant-agent-template/` — Hono + Drizzle + better-sqlite3, 5 skills, 36 vitest tests | `721aee2` |
+| **A.4 sync-card** | viem-based register/update/no-op script with `--dry-run` and `--from-local` flags. **Live-URL-first**: hashes the bytes the URL actually serves, not the local store | `3f3dbef` + later fix (see §0.3) |
+| **A.5 Live deploy** | `wumingchu.tourskill.paking.xyz` on Fly.io (Tokyo, single shared-CPU machine, 1GB persistent volume), LetsEncrypt cert, DNSPod CNAME | `04c41b9` |
+| **A.6 On-chain register** | agentId=1 written to IdentityRegistry; `getAgent(1)` returns the real `(owner, URI, hash, ts, ts, true)` tuple | tx [`0x88cf1987…43f970`](https://sepolia.basescan.org/tx/0x88cf198724a8b57b2d99b9aa293ed91400539dfc18019fde0bed01a8b443f970) |
+| **A.7 demo asset** | 17 s 1920×1080 MP4 walking the protocol round-trip (discovery → fetch → verify → call) with real on-chain + on-server data | `demos/protocol-flow/` |
+
+### 0.1 Architecture corrections made mid-flight
+
+- **x402 ≠ BookingEscrow.** Earlier drafts of `04` and `05` treated x402 as the booking payment rail. Wrong — x402 is a stateless per-call micropayment handshake; booking-level held funds belong to a separate Seaport-style instrument. The two blocks are now drawn in `05_X402_PAYMENT_FLOW.md § Scope`. BookingEscrow is deferred to Phase C, gated on real merchant demand.
+- **Custom registry vs canonical registry.** We deployed our own `IdentityRegistry` at `0xBdE5A55D…A29f` on Base Sepolia. For Base **mainnet** we will use the canonical shared address `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` so that community indexers (e.g. [8004scan.io](https://8004scan.io)) auto-index TourSkill agents. This is the spirit of Principle 1 — use the shared layer, do not fork. Phase B-min adds a Deploy.s.sol switch.
+- **Multi-tenant runtime deferred.** The shipped template is the self-hosted shape. The platform-hosted multi-tenant runtime described in `09_BUSINESS_MODEL.md` is real but not built; ~5 % of merchants will self-host long-term anyway.
+
+### 0.2 Deviations from the planned sequence
+
+- **Skipped** the Supabase auth_tokens table migration (prereq 1) — Phase A merchant-agent uses an in-memory token map, no Supabase dependency. The auth_tokens DDL still applies to the **frontend/indexer** repo, not the template.
+- **Frontend refactor (§5) not done.** The existing `frontend/` still points at the deprecated 0G `MerchantRegistry`. Rewiring to Base + ERC-8004 IdentityRegistry is Phase C-1 (next sprint, this milestone).
+- **Backend slimming (§6) not done.** Same reason — frontend work hasn't started, so the old FastAPI backend still serves the old frontend.
+
+### 0.3 Gotchas captured (see also `merchant-agent-template/TROUBLESHOOTING.md`)
+
+1. **pnpm 10 + native modules.** `pnpm install` skips install scripts by default. better-sqlite3's prebuild then never compiles, and the container crash-loops with `Could not locate the bindings file`. Root `package.json` must declare `"pnpm": { "onlyBuiltDependencies": ["better-sqlite3"] }`.
+2. **`vm.envUint` requires `0x` prefix.** Foundry's deploy script parses `DEPLOYER_PRIVATE_KEY` as a uint256; an unprefixed hex string reverts. `.env.example` must say so loudly.
+3. **Fly HKG region deprecated.** Hong Kong is no longer offered for new volumes. Use `nrt` (Tokyo) or `sin` (Singapore).
+4. **`??` does not catch empty strings.** `process.env.PAYOUT_ADDRESS ?? process.env.AGENT_OWNER_ADDRESS` keeps `""` from a partially-filled .env, silently breaking the agent-card hash invariant. Use `||` for env-string fallback chains. (Bug fixed in `setup.ts`.)
+5. **Local-vs-live hash drift is silent.** Any divergence between local seed and deployed seed silently breaks the on-chain hash invariant. `sync-card` now fetches the live URL by default and only treats local as debug input.
+
+### 0.4 Roadmap (post-A)
+
+The shipped state lets any third party discover & call our first agent end-to-end on testnet. Real next abstractions:
+
+| Tier | What | Trigger |
+|---|---|---|
+| **B-min** | mainnet canonical registry switch in `Deploy.s.sol` | want 8004scan visibility |
+| **B-mcp** | MCP server route alongside REST skills on merchant-agent | want Claude Desktop / GPT to use the agent as a tool |
+| **C-1** | Frontend rewire: `tourskill.paking.xyz/explorer` reads Base IdentityRegistry; `/merchant/sign` writes to it | want real merchants onboarding via web UI |
+| **C-2** | x402 paid-skill MVP (separate from booking escrow) | want to test per-call micropayment plumbing |
+| **C-3** | Independent `@tourskill/cli` package on npm | want easy SDK adoption |
+| **D** | BookingEscrow.sol + ReputationRegistry feedback flow | first real paying merchant asks for held-funds semantics |
+| **E** | Multi-tenant platform-hosted runtime + SaaS billing | sustained inbound merchant interest |
+
+---
+
 ## 1. What we keep, what we cut
 
 | Asset | Decision |
