@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Info, TerminalSquare, ExternalLink, Code2, Globe, X, Play, Loader2, ChevronDown } from 'lucide-react'
 import OnChainBadge from '../components/OnChainBadge'
+import BaseAgentPanel from '../components/BaseAgentPanel'
 import { useT } from '../i18n'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
@@ -260,7 +261,11 @@ export default function Explorer() {
           </select>
         </div>
       </div>
-      
+
+      {/* ── Live on Base Sepolia (Phase A.6 — real ERC-8004 agents) ── */}
+      <BaseAgentPanel />
+
+      {/* ── Legacy: 28 0G testnet seed merchants (deprecated, kept for visual demo) ── */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
