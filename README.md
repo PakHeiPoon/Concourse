@@ -108,23 +108,20 @@ Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transact
                     ┌─────────────┘         │         └──────────────┐
                     │                       │                        │
                     ▼                       ▼                        ▼
-          ┌─────────────────┐    ┌──────────────────┐   ┌───────────────────┐
-          │  Smart Contract  │    │  MCP Gateway      │   │ Decentralized LLM │
-          │  (0G Chain)      │    │  (FastAPI)         │   │ (0G Compute)      │
-          │                  │    │                    │   │                   │
-          │  MerchantRegistry│    │  3 MCP Tools:      │   │ Models:           │
-          │  .sol            │    │  - discover        │   │ - Qwen            │
-          │                  │    │  - invoke_skill    │   │ - GLM             │
-          │  On-chain:       │    │  - get_details     │   │ - DeepSeek        │
-          │  - DID           │    │                    │   │                   │
-          │  - Profile Hash  │    │  12 Skill Handlers │   │ Tool Calling Loop │
-          │  - Skill Endpoint│    │  (menu, booking,   │   │ (up to 8 rounds)  │
-          │                  │    │   tickets, etc.)   │   │                   │
-          └─────────────────┘    │                    │   │ processResponse() │
-                                  │  ┌──────────────┐ │   │ fee settlement    │
-                                  │  │  Supabase DB │ │   │                   │
-                                  │  └──────────────┘ │   └───────────────────┘
-                                  └──────────────────┘
+          ┌──────────────────┐    ┌────────────────────┐   ┌───────────────────┐
+          │  ERC-8004 Layer  │    │  Merchant Agent    │   │ Optional LLM      │
+          │  (Base Sepolia)  │    │  (Hono · self-host)│   │ (any OpenAI-compat│
+          │                  │    │                    │   │  endpoint)        │
+          │  IdentityRegistry│    │  /.well-known/     │   │                   │
+          │  ReputationReg   │    │    agent-card.json │   │ - Qiniu / OpenAI  │
+          │  ValidationReg   │    │  /auth/challenge   │   │ - 0G Compute      │
+          │                  │    │  /auth/verify      │   │ - DeepSeek / Kimi │
+          │  Per agent:      │    │  /skills/<name>    │   │                   │
+          │  - owner addr    │    │                    │   │ Used by user-     │
+          │  - card URI      │    │  EIP-191 auth      │   │ agents for tool-  │
+          │  - SHA-256 hash  │    │  Idempotency-Key   │   │ calling loops.    │
+          │                  │    │  on state changes  │   │                   │
+          └──────────────────┘    └────────────────────┘   └───────────────────┘
 ```
 
 </details>
@@ -260,26 +257,38 @@ TourSkill/
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19 + TypeScript + Vite + Tailwind CSS |
-| Smart Contract | Solidity 0.8.24 + Hardhat 3 |
-| Backend | FastAPI + Supabase |
-| AI Inference | 0G Compute Network + `@0glabs/0g-serving-broker` |
-| Protocol | MCP (Model Context Protocol) |
-| Wallet | MetaMask + ethers.js v6 |
-| Chain | 0G Network (Testnet & Mainnet) |
+| Frontend | React 19 + TypeScript + Vite + Tailwind v4 + ethers v6 |
+| Chain | **Base Sepolia** (testnet, live) → **Base mainnet** (canonical ERC-8004 registry) |
+| Smart contracts | Solidity 0.8.24 + Foundry — evmVersion `cancun`, optimizer 200, 73 tests at 100% coverage |
+| Merchant agent template | Hono 4 + Drizzle + better-sqlite3 + viem + Zod + vitest |
+| Auth | EIP-191 challenge → opaque bearer token (also EIP-712 for future booking-escrow) |
+| Standards | **ERC-8004** (Trustless Agents) + **A2A** (Agent Card) + **x402** (paid skills, planned) |
+| Hosting | Self-host (Fly.io / Railway / your VPS) · Vercel for frontend · Multi-tenant SaaS planned |
+| Optional LLM | Any OpenAI-compatible endpoint (Qiniu MaaS, OpenAI, 0G Compute, DeepSeek, Kimi …) |
+| Wallet | MetaMask / hardware wallets via ethers v6 / viem |
 
 ---
 
 ## Roadmap
 
-| Phase | Status | Description |
-|-------|--------|-------------|
-| **MVP** | Done | Registry + MCP Gateway + Agent Demo with decentralized LLM |
-| **Multi-Agent** | Planned | Merchant-side agents that negotiate with user agents |
-| **x402 Payments** | Planned | HTTP-native peer-to-peer payments between agents |
-| **Reputation** | Planned | On-chain reviews and trust scoring |
-| **Multi-Chain** | Planned | Deploy registry on multiple chains |
-| **Mobile** | Planned | Mobile agent with voice interaction |
+The first agent on this protocol — `wumingchu.tourskill.paking.xyz` — is **live now** at agentId=1 on Base Sepolia.
+Any client can verify: `cast call --rpc-url https://sepolia.base.org 0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f 'getAgent(uint256)' 1`
+
+| Tier | Status | Description |
+|---|---|---|
+| **Phase A.2 — Contracts** | ✅ Shipped | `IdentityRegistry`, `ReputationRegistry`, `ValidationRegistry` deployed + Basescan-verified on Base Sepolia |
+| **Phase A.3 — Merchant template** | ✅ Shipped | Open-source Hono template, 5 hotel skills, EIP-191 auth, canonical-JSON cards with SHA-256 |
+| **Phase A.5 — First live agent** | ✅ Shipped | Wuming Chu · Huangshan on Fly Tokyo, custom domain + LetsEncrypt cert, agentId=1 on chain |
+| **Phase A.7 — Trustless explorer** | ✅ Shipped | Frontend reads chain directly, hash-verifies served bytes, calls skills against agent URL — no backend proxy |
+| **Phase B-min — Canonical mainnet** | 🟡 Building | Switch `Deploy.s.sol` to use the shared mainnet ERC-8004 address (`0x8004A169…A432`) so [8004scan.io](https://8004scan.io) auto-indexes us |
+| **Phase B-mcp — MCP route** | 🟡 Building | Add MCP server endpoint alongside REST skills — Claude Desktop / GPT can use merchants as native tools |
+| **Phase C-1 — Frontend rewire** | 🟡 Building | Retire legacy 0G demo, MerchantSign writes to Base IdentityRegistry via MetaMask |
+| **Phase C-2 — x402 paid skills** | 📋 Planned | Stateless per-call USDC payments (EIP-3009), standard Coinbase x402 — separate from booking-level escrow |
+| **Phase C-3 — `@tourskill/cli`** | 📋 Planned | Independent npm CLI: `tourskill list`, `tourskill show 1`, `tourskill call <id> <skill>` |
+| **Phase D — BookingEscrow + reputation** | 📋 Planned | EIP-712 Seaport-style escrow with time-locked release; settled bookings auto-authorize feedback in ReputationRegistry |
+| **Phase E — Multi-tenant SaaS** | 📋 Planned | Platform-hosted runtime so 95% of merchants get zero-ops onboarding; free tier + paid tiers |
+
+See [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_PLAN.md) for the canonical post-Phase-A roadmap and [`merchant-agent-template/TROUBLESHOOTING.md`](./merchant-agent-template/TROUBLESHOOTING.md) for real gotchas hit shipping agent #1.
 
 ---
 

@@ -101,22 +101,20 @@
                     ┌─────────────┘         │         └──────────────┐
                     │                       │                        │
                     ▼                       ▼                        ▼
-          ┌─────────────────┐    ┌──────────────────┐   ┌───────────────────┐
-          │  智能合约         │    │  MCP 网关          │   │ 去中心化 LLM      │
-          │  (链上)          │    │  (FastAPI)         │   │ (0G Compute)      │
-          │                  │    │                    │   │                   │
-          │  MerchantRegistry│    │  3 个 MCP 工具：   │   │ 支持模型：         │
-          │  .sol            │    │  - 发现商家        │   │ - Qwen            │
-          │                  │    │  - 调用技能        │   │ - GLM             │
-          │  链上存储：       │    │  - 查询详情        │   │ - DeepSeek        │
-          │  - DID           │    │                    │   │                   │
-          │  - Profile Hash  │    │  12 个技能处理器   │   │ 工具调用循环       │
-          │  - 技能端点      │    │  (菜单/预订/门票)  │   │ (最多 8 轮)       │
-          └─────────────────┘    │                    │   │                   │
-                                  │  ┌──────────────┐ │   │ processResponse() │
-                                  │  │  Supabase DB │ │   │ 费用结算          │
-                                  │  └──────────────┘ │   │                   │
-                                  └──────────────────┘   └───────────────────┘
+          ┌──────────────────┐    ┌────────────────────┐   ┌───────────────────┐
+          │  ERC-8004 层      │    │  商家 Agent         │   │ 可选 LLM          │
+          │  (Base Sepolia)   │    │  (Hono · 自托管)   │   │ (任何 OpenAI       │
+          │                   │    │                    │   │  兼容端点)        │
+          │  IdentityRegistry │    │  /.well-known/     │   │                   │
+          │  ReputationReg    │    │    agent-card.json │   │ - 七牛云 MaaS     │
+          │  ValidationReg    │    │  /auth/challenge   │   │ - OpenAI          │
+          │                   │    │  /auth/verify      │   │ - 0G Compute      │
+          │  每个 agent：      │    │  /skills/<name>    │   │ - DeepSeek / Kimi │
+          │  - 所有者钱包      │    │                    │   │                   │
+          │  - 卡片 URI       │    │  EIP-191 认证      │   │ user-agent 用     │
+          │  - SHA-256 hash   │    │  Idempotency-Key   │   │ 来做 tool-calling │
+          │                   │    │  保护状态变更      │   │ 循环。            │
+          └──────────────────┘    └────────────────────┘   └───────────────────┘
 ```
 
 </details>
@@ -252,26 +250,38 @@ TourSkill/
 
 | 层级 | 技术 |
 |------|------|
-| 前端 | React 19 + TypeScript + Vite + Tailwind CSS |
-| 智能合约 | Solidity 0.8.24 + Hardhat 3 |
-| 后端 | FastAPI + Supabase |
-| AI 推理 | 0G Compute Network + `@0glabs/0g-serving-broker` |
-| 协议 | MCP（模型上下文协议） |
-| 钱包 | MetaMask + ethers.js v6 |
-| 区块链 | 0G Network（测试网 & 主网） |
+| 前端 | React 19 + TypeScript + Vite + Tailwind v4 + ethers v6 |
+| 区块链 | **Base Sepolia**（测试网，已上线）→ **Base 主网**（标准 ERC-8004 共享注册表）|
+| 智能合约 | Solidity 0.8.24 + Foundry — evmVersion `cancun`，optimizer 200，73 测试 100% 覆盖 |
+| 商家 agent 模板 | Hono 4 + Drizzle + better-sqlite3 + viem + Zod + vitest |
+| 认证 | EIP-191 challenge → 不透明 bearer token（未来 booking-escrow 走 EIP-712）|
+| 标准 | **ERC-8004**（Trustless Agents）+ **A2A**（Agent Card）+ **x402**（付费 skill，规划中）|
+| 托管 | 自托管（Fly.io / Railway / 自有 VPS）· 前端 Vercel · 平台多租户 SaaS 规划中 |
+| 可选 LLM | 任何 OpenAI 兼容端点（七牛云 MaaS、OpenAI、0G Compute、DeepSeek、Kimi…）|
+| 钱包 | MetaMask / 硬件钱包（ethers v6 / viem）|
 
 ---
 
 ## 路线图
 
+协议上第一个真 agent —— `wumingchu.tourskill.paking.xyz` —— **已上线**，Base Sepolia 上 agentId=1。
+任何客户端均可验证：`cast call --rpc-url https://sepolia.base.org 0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f 'getAgent(uint256)' 1`
+
 | 阶段 | 状态 | 说明 |
-|------|------|------|
-| **MVP** | 已完成 | 注册表 + MCP 网关 + 智能体演示 + 去中心化 LLM |
-| **多智能体** | 规划中 | 商家端智能体与用户智能体直接协商 |
-| **x402 支付** | 规划中 | HTTP 原生的智能体间点对点支付 |
-| **信誉系统** | 规划中 | 链上评价和信任评分 |
-| **多链部署** | 规划中 | 在多条链上部署注册表 |
-| **移动端** | 规划中 | 支持语音交互的移动智能体 |
+|---|---|---|
+| **Phase A.2 — 合约** | ✅ 已上线 | `IdentityRegistry`、`ReputationRegistry`、`ValidationRegistry` 三合约在 Base Sepolia 部署 + Basescan verified |
+| **Phase A.3 — 商家模板** | ✅ 已上线 | 开源 Hono 模板、5 个酒店 skill、EIP-191 认证、canonical-JSON 卡片 + SHA-256 header |
+| **Phase A.5 — 首个 live agent** | ✅ 已上线 | 无名处·黄山 部署在 Fly Tokyo，自有域名 + LetsEncrypt 证书，链上 agentId=1 |
+| **Phase A.7 — Trustless explorer** | ✅ 已上线 | 前端直连 IdentityRegistry，浏览器算 SHA-256 验证 card 字节，直连 agent URL 调 skill |
+| **Phase B-min — 主网共享注册表** | 🟡 进行中 | 部署脚本切换到标准 ERC-8004 主网地址（`0x8004A169…A432`），让 [8004scan.io](https://8004scan.io) 自动索引 |
+| **Phase B-mcp — MCP 接口** | 🟡 进行中 | 在 merchant-agent 上新增 MCP server 路由，Claude Desktop / GPT 可把商家当原生 tool 使用 |
+| **Phase C-1 — 前端全面切换 Base** | 🟡 进行中 | 下线老 0G 演示数据，MerchantSign 改走 Base IdentityRegistry（MetaMask 签名）|
+| **Phase C-2 — x402 付费 skill** | 📋 规划中 | 无状态 per-call USDC 微支付（EIP-3009），标准 Coinbase x402 用法，不和 booking escrow 混杂 |
+| **Phase C-3 — `@tourskill/cli`** | 📋 规划中 | 独立 npm CLI：`tourskill list`、`tourskill show 1`、`tourskill call <id> <skill>` |
+| **Phase D — BookingEscrow + 信誉** | 📋 规划中 | EIP-712 Seaport 风格 escrow，时间锁释放；结算后自动给买家 ReputationRegistry 留评授权 |
+| **Phase E — 平台多租户 SaaS** | 📋 规划中 | 平台托管运行时，95% 中小商家走零运维 SaaS，分免费/付费 tier |
+
+详见 [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_PLAN.md)（Phase A 收尾 + 后续路线）和 [`merchant-agent-template/TROUBLESHOOTING.md`](./merchant-agent-template/TROUBLESHOOTING.md)（上线 agent #1 时踩过的坑）。
 
 ---
 

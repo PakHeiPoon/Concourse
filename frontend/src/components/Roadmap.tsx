@@ -13,52 +13,57 @@ const ITEMS: RoadmapItem[] = [
   // ─── Live ───
   {
     status: 'live',
-    title: 'Decentralized merchant registry',
-    detail: '28 merchants registered on 0G Chain via ERC-8004. Every entry has a verifiable owner wallet, profile hash, and on-chain register tx.',
+    title: 'ERC-8004 registries on Base Sepolia',
+    detail: 'IdentityRegistry · ReputationRegistry · ValidationRegistry — all three deployed and Basescan-verified, evmVersion cancun, 73 Foundry tests at 100% coverage.',
   },
   {
     status: 'live',
-    title: 'Personal AI agent SKILL.md',
-    detail: 'One-line install lets any agent (Claude Code, Cursor, custom) discover merchants, personalize ranking, and invoke skills.',
+    title: 'Merchant-agent template (open source)',
+    detail: 'Hono + Drizzle + better-sqlite3 reference implementation. EIP-191 challenge auth, 5 hotel skills, canonical-JSON agent-card with SHA-256 header. 36 vitest tests green.',
   },
   {
     status: 'live',
-    title: 'Wallet identity dashboard',
-    detail: 'Every wallet gets a profile page showing its registered merchants, with chainscan-linked proof of registration.',
+    title: 'First live agent — wumingchu (#1)',
+    detail: 'Wuming Chu · Huangshan Hidden Retreat live at wumingchu.tourskill.paking.xyz on Fly Tokyo. Registered as agentId 1 on IdentityRegistry, byte-equivalent hash on chain and URL.',
+  },
+  {
+    status: 'live',
+    title: 'Trustless discovery in /explorer',
+    detail: 'This page reads IdentityRegistry directly via ethers v6 — no backend proxy. Each agent fetches its own card, browser computes SHA-256, compares with on-chain commit, then calls skills against the agent URL.',
   },
 
   // ─── Building ───
   {
     status: 'building',
-    title: 'Merchant-side agent SKILL.md',
-    detail: 'Mirror skill for merchant agents to register, publish profile, and respond to incoming user-agent calls — closing the A2A loop.',
+    title: 'Mainnet via canonical registry',
+    detail: 'Deploy switch lands TourSkill agents on the shared ERC-8004 mainnet address (0x8004A169…A432). 8004scan and the broader ecosystem auto-index us — no custom indexer required.',
   },
   {
     status: 'building',
-    title: 'x402 native micropayments',
-    detail: 'Payment settlement at the HTTP layer — agent pays agent per call. The first A2A registry to have payments built into the protocol.',
+    title: 'MCP server route on agent',
+    detail: 'Same business logic, second wire format. Any MCP client (Claude Desktop, custom agents) can list and invoke skills as native tools alongside the existing REST surface.',
   },
   {
     status: 'building',
-    title: 'Portable user preferences',
-    detail: 'Wallet-bound profile (dietary, allergens, budget, languages) that any agent can read — preferences travel with you, not the platform.',
+    title: 'Frontend full rewire to Base',
+    detail: 'Retire the legacy 0G demo grid. /merchant/sign writes to Base IdentityRegistry via MetaMask. Profile pages, Explorer, and skill execution all read live on-chain truth.',
   },
 
   // ─── Planned ───
   {
     status: 'planned',
-    title: 'On-chain reputation system',
-    detail: 'Merchants and users earn verifiable reputation from completed transactions. Trust scores live on-chain, not in walled gardens.',
+    title: 'x402 paid-skill micropayments',
+    detail: 'Stateless per-call USDC payments via EIP-3009 transferWithAuthorization — the standard Coinbase x402 handshake, used as Coinbase published it. Separate from booking-level settlement.',
   },
   {
     status: 'planned',
-    title: 'SIWE authentication',
-    detail: 'Sign-In with Ethereum for write operations. Per-wallet rate limits, sovereign profile editing, and bot-resistant API access.',
+    title: 'BookingEscrow + ReputationRegistry',
+    detail: 'EIP-712 Seaport-style escrow for held funds, time-locked release, dispute window. Settled bookings auto-authorize feedback in ReputationRegistry — Sybil-resistant reviews by construction.',
   },
   {
     status: 'planned',
-    title: 'Multi-chain expansion',
-    detail: 'Beyond 0G testnet to 0G mainnet, then bridge identity to other EVM chains (Base, Arbitrum, Optimism).',
+    title: 'Multi-tenant SaaS + @tourskill/cli',
+    detail: 'Platform-hosted multi-tenant runtime so 95% of merchants get zero-ops SaaS pricing (free tier + paid). Independent npm CLI for developers integrating the protocol from any language.',
   },
 ]
 
