@@ -172,6 +172,72 @@ pnpm sync-card --dry-run --from-local
 
 ---
 
+### `signer already owns agent(s)` — sync-card refuses to register
+
+**Symptom**
+```
+signer 0x… already owns agent(s) [1].
+  Refusing to register a duplicate. To update an existing agent, set
+    AGENT_ID=<id>
+  in .env and re-run pnpm sync-card.
+```
+
+**Root cause**
+You registered an agent earlier (via `cast send` or an earlier
+`sync-card` run) but `.env` doesn't have `AGENT_ID=<id>` set, so
+`sync-card` doesn't know to take the update path. Without the
+guardrail this would silently create a *second* agent on chain.
+
+**Fix**
+Find your existing agentId:
+```bash
+cast call --rpc-url https://sepolia.base.org \
+  <IdentityRegistry> "getAgentsByOwner(address)(uint256[])" <your-owner-addr>
+```
+Add `AGENT_ID=<that id>` to `.env` (uncommented) and re-run
+`pnpm sync-card`. It will hit the update path, no-op if the on-chain
+hash already matches, or call `update(id, uri, hash)` if the live URL
+serves something different.
+
+**Related gotcha**: an empty `AGENT_ID=` line in `.env` is *not* the
+same as "unset" — `process.env.AGENT_ID` reads as `""` (a present-but-
+empty string), which old `sync-card` versions treated as
+"unregistered." The current template `.env.example` ships the line
+commented out for this reason.
+
+---
+
+### viem/ethers: `BAD_DATA` or `Number not in safe integer range` calling `getAgent`
+
+**Symptom**
+- ethers v6: `Error: could not decode result data (... code=BAD_DATA)`
+- viem: `Number "494907059…" is not in safe integer range`
+
+**Root cause**
+`getAgent(uint256)` returns a Solidity struct (`Agent memory`), which
+the ABI encodes as a single tuple — NOT as six flat return values.
+A multi-return ABI fragment misaligns the decoder, which then reads
+the bytes32 hash slot as a uint256 (huge bigint) or string offset
+(BAD_DATA).
+
+**Fix** (already applied in template)
+ABI fragment must wrap fields in `tuple(...)`:
+
+```typescript
+// WRONG
+'function getAgent(uint256 agentId) view returns (address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active)'
+
+// RIGHT
+'function getAgent(uint256 agentId) view returns ((address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active))'
+```
+
+With the tuple form, viem returns a struct-shaped object (access by
+`.owner`, `.agentCardHash`, etc.) and ethers returns an array (access
+by index, but you may need to unwrap one extra layer — see frontend
+`src/lib/erc8004.ts` for the adaptive pattern).
+
+---
+
 ### `INVALID_INPUT` from `/skills/<x>` when calling without `Idempotency-Key`
 
 **Symptom**  

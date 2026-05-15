@@ -24,7 +24,7 @@ const ITEMS: RoadmapItem[] = [
   {
     status: 'live',
     title: 'First live agent — wumingchu (#1)',
-    detail: 'Wuming Chu · Huangshan Hidden Retreat live at wumingchu.tourskill.paking.xyz on Fly Tokyo. Registered as agentId 1 on IdentityRegistry, byte-equivalent hash on chain and URL.',
+    detail: 'Wuming Chu · Huangshan Hidden Retreat live at wumingchu.concourse.paking.xyz on Fly Tokyo. Registered as agentId 1 on IdentityRegistry, byte-equivalent hash on chain and URL.',
   },
   {
     status: 'live',

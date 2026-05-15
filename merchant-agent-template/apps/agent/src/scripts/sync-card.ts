@@ -50,10 +50,16 @@ import { buildAgentCard, cardHash, canonicalJson } from '../core/card.js';
 import { skills } from '../routes/skill_loader.js';
 import packageJson from '../../package.json' with { type: 'json' };
 
+// IMPORTANT: `getAgent` returns a Solidity struct (`Agent memory`), which
+// the ABI encodes as a single tuple — NOT six flat return values. Writing
+// the fragment as multi-return causes both ethers v6 and viem to misalign
+// their decoders against the on-chain bytes (manifests as BAD_DATA in
+// ethers, "Number not in safe integer range" in viem).
 const REGISTRY_ABI = parseAbi([
   'function register(string agentCardURI, bytes32 agentCardHash) returns (uint256)',
   'function update(uint256 agentId, string newURI, bytes32 newHash)',
-  'function getAgent(uint256 agentId) view returns (address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active)',
+  'function getAgent(uint256 agentId) view returns ((address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active))',
+  'function getAgentsByOwner(address owner) view returns (uint256[])',
   'event AgentRegistered(uint256 indexed agentId, address indexed owner, string agentCardURI, bytes32 agentCardHash)',
   'event AgentUpdated(uint256 indexed agentId, string agentCardURI, bytes32 agentCardHash)',
 ]);
@@ -181,7 +187,9 @@ async function main(): Promise<void> {
       const onchain = await publicClient.readContract({
         address: registry, abi: REGISTRY_ABI, functionName: 'getAgent', args: [agentId],
       });
-      const [owner, , onchainHash] = onchain;
+      // With tuple ABI viem returns a struct-shaped object with named fields
+      const owner       = onchain.owner;
+      const onchainHash = onchain.agentCardHash;
       if (owner.toLowerCase() !== account.address.toLowerCase()) {
         throw new Error(`AGENT_ID ${agentId} is owned by ${owner}, not signer ${account.address}`);
       }
@@ -200,6 +208,26 @@ async function main(): Promise<void> {
       console.log(`status:   ${receipt.status}  (block ${receipt.blockNumber})`);
       printResult({ hash, uri, source, agentId, txHash, action: 'update' });
       return;
+    }
+
+    // Guardrail: signer might own an agent already (e.g. registered earlier
+    // via cast send + AGENT_ID never written to .env). Refuse to register
+    // a duplicate — the operator should set AGENT_ID first to trigger the
+    // update path. Without this, an empty `AGENT_ID=` line silently
+    // produces ghost agents on chain.
+    const existing = await publicClient.readContract({
+      address: registry, abi: REGISTRY_ABI, functionName: 'getAgentsByOwner',
+      args: [account.address],
+    });
+    if (existing.length > 0) {
+      const ids = existing.map((b) => b.toString()).join(', ');
+      throw new Error(
+        `signer ${account.address} already owns agent(s) [${ids}].\n` +
+        `  Refusing to register a duplicate. To update an existing agent, set\n` +
+        `    AGENT_ID=<id>\n` +
+        `  in .env and re-run pnpm sync-card. To register a NEW agent under a\n` +
+        `  different wallet, set SYNC_PRIVATE_KEY to that wallet's key.`,
+      );
     }
 
     console.log('registering new agent…');
