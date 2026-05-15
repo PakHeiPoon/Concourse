@@ -17,9 +17,14 @@ export const BASE_SEPOLIA = {
 export const IDENTITY_REGISTRY_ADDRESS =
   '0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f' as const
 
+// IMPORTANT: getAgent returns a Solidity struct (tuple), not 6 separate
+// return values. ethers v6 is strict — writing it as multi-return makes
+// the decoder reject the encoded payload with BAD_DATA. The contract is
+// `function getAgent(uint256) returns (Agent memory)` where Agent is a
+// struct, so the ABI fragment must wrap fields in `tuple(...)`.
 const IDENTITY_REGISTRY_ABI = [
   'function totalAgents() view returns (uint256)',
-  'function getAgent(uint256 agentId) view returns (address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active)',
+  'function getAgent(uint256 agentId) view returns (tuple(address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active))',
 ] as const
 
 export interface OnChainAgent {
@@ -53,15 +58,20 @@ export async function getTotalAgents(): Promise<number> {
 }
 
 export async function getAgent(agentId: number): Promise<OnChainAgent> {
-  const tuple = await registry().getAgent(BigInt(agentId))
+  // With `tuple(...)` ABI, ethers returns a single Result wrapping all
+  // fields. Access by index works identically.
+  const r = await registry().getAgent(BigInt(agentId))
+  // Some callers return the tuple as r[0] when only one return param exists;
+  // detect both shapes to be safe across ethers minor versions.
+  const t = Array.isArray(r) && r.length === 1 && Array.isArray(r[0]) ? r[0] : r
   return {
     agentId,
-    owner:         tuple[0],
-    agentCardURI:  tuple[1],
-    agentCardHash: tuple[2],
-    registeredAt:  Number(tuple[3]),
-    updatedAt:     Number(tuple[4]),
-    active:        Boolean(tuple[5]),
+    owner:         t[0],
+    agentCardURI:  t[1],
+    agentCardHash: t[2],
+    registeredAt:  Number(t[3]),
+    updatedAt:     Number(t[4]),
+    active:        Boolean(t[5]),
   }
 }
 
