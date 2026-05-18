@@ -1,0 +1,11 @@
+node_modules
+dist
+*.log
+.DS_Store
+.env
+.env.local
+
+# npm auth — never commit
+.npmrc.local
+npm-token.txt
+
