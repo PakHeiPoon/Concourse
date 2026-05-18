@@ -1,321 +1,161 @@
+<h1 align="center">Concourse</h1>
+
 <p align="center">
-  <img src="docs/images/tourskill-banner.svg" alt="Concourse Banner" width="800" />
+  <strong>An open protocol layer where AI agents discover, verify, and transact directly.<br />Agent-to-Agent. Peer-to-Peer. No platform in the critical path.</strong>
 </p>
 
 <p align="center">
-  <img src="docs/images/tourskill-logo.png" alt="Concourse Logo" width="140" />
+  <em>Built on ERC-8004 Trustless Agents · A2A Agent Card · x402 micropayments.</em>
 </p>
 
 <p align="center">
-  <strong>Concourse — the open protocol layer where AI agents discover, verify, and transact directly. Agent-to-Agent. Peer-to-Peer.</strong>
-</p>
-
-<p align="center">
-  <em>Built on ERC-8004 Trustless Agents · A2A Agent Card · x402 micropayments. Tourism is the first vertical that proves the protocol; commerce of every kind follows.</em>
-</p>
-
-<p align="center">
-  <a href="#the-problem"><img src="https://img.shields.io/badge/Why-Read_the_Story-blue?style=for-the-badge" alt="Story" /></a>
-  <a href="#quick-start"><img src="https://img.shields.io/badge/Quick_Start-5_min-brightgreen?style=for-the-badge" alt="Quick Start" /></a>
-  <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文文档-点击查看-orange?style=for-the-badge" alt="中文" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License" /></a>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/github/stars/PakHeiPoon/Concourse?style=social" alt="Stars" />
-  <img src="https://img.shields.io/github/forks/PakHeiPoon/Concourse?style=social" alt="Forks" />
-  <img src="https://img.shields.io/github/last-commit/PakHeiPoon/Concourse" alt="Last Commit" />
+  <a href="https://www.npmjs.com/package/@concourse-protocol/discover"><img src="https://img.shields.io/npm/v/@concourse-protocol/discover?label=%40concourse-protocol%2Fdiscover&color=cb3837" alt="npm" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow" alt="License: MIT" /></a>
+  <a href="https://github.com/PakHeiPoon/Concourse/actions"><img src="https://img.shields.io/github/actions/workflow/status/PakHeiPoon/Concourse/publish-discover-cli.yml?label=CI" alt="CI" /></a>
+  <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文-Readme-orange" alt="中文" /></a>
 </p>
 
 ---
 
-## Table of Contents
+## Thesis
 
-- [The Problem](#the-problem)
-- [The Vision](#the-vision)
-- [How It Works](#how-it-works)
-- [Architecture](#architecture)
-- [Key Features](#key-features)
-- [Quick Start](#quick-start)
-- [Project Structure](#project-structure)
-- [Tech Stack](#tech-stack)
-- [Roadmap](#roadmap)
-- [Star History](#star-history)
-- [License](#license)
+> Concourse is a falsifiable proof that AI agents can **discover, verify, and transact** with each other **without any platform intermediary** in the operational critical path.
 
----
+If you can complete a booking using only a public Base RPC, SHA-256, and HTTPS — Concourse the company is operationally dispensable. That is the point.
 
-## The Problem
+## The 4-step protocol
 
-### Today: You Don't Control Your Travel Experience
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ① DISCOVER   eth_call → IdentityRegistry.getAgent(id)          │
+│  ② FETCH      GET cardURI                                       │
+│  ③ VERIFY     sha256(bytes) == cardHash ?       → no → ABORT    │
+│  ④ INVOKE     POST card.url + skill.endpoint                    │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-<p align="center">
-  <img src="docs/images/tourskill-problem-today.png" alt="Today: you don't control your travel experience" width="900" />
-</p>
-**The illusion of choice:** Merchants appear to set their own prices, but platforms control discovery, ranking, and the coupon ecosystem. A hotel's ¥800 room becomes ¥1,200 after platform fees — then a "¥200 coupon" makes you feel like you got a deal at ¥1,000. The merchant still only receives ¥900.
+Every step talks to **either Base chain RPC or the merchant's own URL**. No Concourse-operated server sits in between.
 
-> *"We invented the internet to connect people directly. Then we built platforms that sit between every connection and extract rent."*
+## Quick start (zero install)
 
----
+```bash
+# List every agent on the registry
+npx -y @concourse-protocol/discover list
 
-## The Vision
+# Fetch + SHA-256 verify a card against the on-chain commit
+npx -y @concourse-protocol/discover fetch 1
 
-### Tomorrow: Your Agent Talks to Their Agent
+# Show available skills (verified before display)
+npx -y @concourse-protocol/discover skills 1
 
-Inspired by the **Bitcoin whitepaper's core insight** — *peer-to-peer transactions without a trusted third party* — Concourse applies the same principle to travel commerce:
+# Invoke a skill end-to-end (verify → POST with auto Idempotency-Key)
+npx -y @concourse-protocol/discover invoke 1 check_availability \
+  -d '{"check_in":"2026-09-01","check_out":"2026-09-03","room_type":"mountain_view"}'
+```
 
-<p align="center">
-  <img src="docs/images/tourskill-a2a-ecosystem.png" alt="Concourse Agent-to-Agent (A2A) travel ecosystem" width="900" />
-</p>
+Defaults to Base Sepolia + the canonical IdentityRegistry at `0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f`. Override with `CONCOURSE_RPC_URL`, `CONCOURSE_REGISTRY`, `CONCOURSE_CHAIN_ID`.
 
-**Concourse is the decentralized registry that makes this possible** — an open, verifiable "Yellow Pages" where merchants publish their skills (menus, availability, booking) and any AI agent can discover and interact with them directly.
+## MCP server (Claude Desktop / Cursor / any MCP host)
 
-### The Journey: From Platform Dependency to Agent Freedom
+```json
+{
+  "mcpServers": {
+    "concourse": {
+      "command": "npx",
+      "args": ["-y", "@concourse-protocol/discover", "concourse-mcp"]
+    }
+  }
+}
+```
 
-<p align="center">
-  <img src="docs/images/tourskill-journey.png" alt="The journey: from platform dependency to agent freedom" width="900" />
-</p>
----
-
-
-
-## How It Works
-
-### User Flow
-
-<p align="center">
-  <img src="docs/images/tourskill-feature-flow.png" alt="Concourse feature flow: personalized AI dining" width="900" />
-</p>
-
----
+Exposes 4 tools — `concourse_list_agents`, `concourse_verify_card`, `concourse_list_skills`, `concourse_invoke_skill`. Every call begins with on-chain SHA-256 verification.
 
 ## Architecture
 
-<p align="center">
-  <img src="docs/images/tourskill-infographic.png" alt="Concourse Architecture Infographic" width="800" />
-</p>
-
-<details>
-<summary>Text Version (Click to Expand)</summary>
-
 ```
-                           ┌─────────────────────────────────┐
-                           │        Frontend (React)          │
-                           │                                  │
-                           │  ┌────────┐ ┌──────┐ ┌───────┐ │
-                           │  │Register│ │Browse│ │Agent  │ │
-                           │  │Portal  │ │& Test│ │Demo   │ │
-                           │  └───┬────┘ └──┬───┘ └───┬───┘ │
-                           │      │         │         │      │
-                           └──────┼─────────┼─────────┼──────┘
-                                  │         │         │
-                    ┌─────────────┘         │         └──────────────┐
-                    │                       │                        │
-                    ▼                       ▼                        ▼
-          ┌──────────────────┐    ┌────────────────────┐   ┌───────────────────┐
-          │  ERC-8004 Layer  │    │  Merchant Agent    │   │ Optional LLM      │
-          │  (Base Sepolia)  │    │  (Hono · self-host)│   │ (any OpenAI-compat│
-          │                  │    │                    │   │  endpoint)        │
-          │  IdentityRegistry│    │  /.well-known/     │   │                   │
-          │  ReputationReg   │    │    agent-card.json │   │ - Qiniu / OpenAI  │
-          │  ValidationReg   │    │  /auth/challenge   │   │ - 0G Compute      │
-          │                  │    │  /auth/verify      │   │ - DeepSeek / Kimi │
-          │  Per agent:      │    │  /skills/<name>    │   │                   │
-          │  - owner addr    │    │                    │   │ Used by user-     │
-          │  - card URI      │    │  EIP-191 auth      │   │ agents for tool-  │
-          │  - SHA-256 hash  │    │  Idempotency-Key   │   │ calling loops.    │
-          │                  │    │  on state changes  │   │                   │
-          └──────────────────┘    └────────────────────┘   └───────────────────┘
+                  ON-CHAIN  ·  Base Sepolia                           
+       ┌──────────────────────────────────────────────┐
+       │  IdentityRegistry  ·  0xBdE5…A29f (immutable)│
+       │  ReputationRegistry  ·  ValidationRegistry   │
+       │  struct Agent { owner, cardURI, cardHash,    │
+       │                 registeredAt, updatedAt,     │
+       │                 active }                     │
+       └──────────────────────────────────────────────┘
+                ▲                              ▲
+                │ getAgent(id)                 │ register / update
+                │                              │ (merchant signs)
+                ▼                              ▼
+   ┌─────────────────────┐         ┌────────────────────────────┐
+   │   USER AGENT  · AI  │ ◄────► │  MERCHANT AGENT · self-host │
+   │   (Claude/Cursor)   │  HTTPS  │  Hono + Drizzle + viem      │
+   │   loads SKILL.md as │         │  /.well-known/agent-card    │
+   │   protocol manual   │         │  /auth/challenge · /verify  │
+   └─────────────────────┘         │  /skills/<name>             │
+                                   └────────────────────────────┘
+
+           ⚠️ NO Concourse-controlled gateway between any of these layers
 ```
 
-</details>
+## What's in this repo
 
-### Merchant Skill System
+| Path | What it is |
+|---|---|
+| [`contracts/erc8004/`](./contracts/erc8004/) | Foundry — `IdentityRegistry` + `ReputationRegistry` + `ValidationRegistry` + tests + Deploy script. Solidity 0.8.24, evmVersion `cancun`, 73 tests at 100% coverage. |
+| [`merchant-agent-template/`](./merchant-agent-template/) | Open-source reference implementation a merchant clones to become a sovereign agent. Hono + Drizzle + better-sqlite3 + viem. EIP-191 auth, canonical-JSON cards, SHA-256 anchored on chain. |
+| [`packages/discover-cli/`](./packages/discover-cli/) | `@concourse-protocol/discover` — CLI + MCP server. The executable form of `SKILL.md`. Auto-publishes on `discover-cli-v*` tag push. |
+| [`backend/skills/`](./backend/skills/) | Two SKILL.md files. `user-client/SKILL.md` teaches an AI agent the protocol; `merchant-client/SKILL.md` teaches it how to onboard a merchant. **The SKILL files are the protocol manuals — load them into any LLM, they don't need this repo to function.** |
+| [`docs/architecture/`](./docs/architecture/) | Design notes — agent-card schema, reputation model, x402 payment flow, migration plan. |
+| [`frontend/`](./frontend/) | Reference UI at [concourse.paking.xyz](https://concourse.paking.xyz). Reads `IdentityRegistry` directly via ethers v6 — no backend proxy. |
+| [`backend/`](./backend/) | Optional FastAPI side-service (auth helpers + indexer cache for the reference UI). The protocol does not depend on it. |
 
-Concourse merchants publish **executable skills** — not just static listings. Any AI agent can invoke these:
+## Releases
 
-| Category | Skills | Description |
-|----------|--------|-------------|
-| **Restaurant** | `get_menu`, `reserve_table`, `check_table_availability`, `get_dietary_options` | Real menus with prices, dietary tags, allergens |
-| **Hotel** | `check_availability`, `get_rates`, `create_booking`, `get_cancellation_policy` | Room types, dynamic pricing, cancellation rules |
-| **Attraction** | `check_ticket_inventory`, `get_opening_hours`, `purchase_ticket`, `get_visitor_guide` | Time slots, combo tickets, transport info |
-
----
-
-## Key Features
-
-| Feature | Description |
-|---------|-------------|
-| **Decentralized Registry** | On-chain merchant identity with profile hash verification |
-| **MCP Protocol** | Standard tool interface — any AI agent can connect |
-| **User-Powered AI** | Your wallet pays for LLM inference — no centralized API keys |
-| **Network Selection** | Switch between Testnet and Mainnet with auto chain config |
-| **Smart Funding** | Auto-detect balance, only deposit/transfer when insufficient |
-| **12 Merchant Skills** | Real executable APIs: menus, bookings, tickets, guides |
-| **Autonomous Agent** | LLM decides which tools to call (up to 8 iterations) |
-| **Real-time Logs** | Live terminal showing every tool call and result |
-| **Multi-city Data** | Hangzhou, Shanghai, Suzhou, Beijing — 29 real merchants |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 18+ / Python 3.10+
-- MetaMask browser extension
-- Testnet tokens ([faucet](https://faucet.0g.ai))
-
-### 1. Clone
-
-```bash
-git clone https://github.com/PakHeiPoon/Concourse.git
-cd Concourse
-```
-
-### 2. Backend (MCP Gateway)
-
-```bash
-cd backend
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env    # Edit with your Supabase credentials
-uvicorn app.main:app --reload --port 8000
-```
-
-### 3. Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Smart Contract (Optional — already deployed)
-
-```bash
-cd contracts
-npm install
-cp .env.example .env    # Edit with your deployer private key
-npx hardhat run scripts/deploy.js --network zerog_testnet
-```
-
-> **Deployed Contract:** [`0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543`](https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543) (0G testnet, chainId `16602`) — already populated with 28 merchants across Hangzhou, Shanghai, Suzhou, Beijing.
-
----
-
-## Agent Integration via SKILL.md
-
-Concourse ships with a **client-side SKILL.md spec** that any AI agent (Claude Code, Cursor, custom agents) can install to discover and interact with the on-chain merchant registry.
-
-### Quick install
-
-Tell your personal agent:
-
-> "Install the Concourse skill from `https://api.tourskill.paking.xyz/skills/user-client/SKILL.md`"
-
-The SKILL.md is served directly by the public Concourse gateway — same host as the API it describes. No GitHub access needed.
-
-Once installed, the agent learns to:
-
-1. **Classify** tourism intent ("dinner in Hangzhou tomorrow") into structured form
-2. **Discover** merchants via the registry — already populated on-chain
-3. **Personalize** ranking using your own preferences (allergens, budget, history) — the core anti-OTA edge
-4. **Invoke** merchant skills (book a table, reserve a room, buy tickets) with on-chain proof
-
-See [`skills/user-client/SKILL.md`](skills/user-client/SKILL.md) for the full spec.
-
----
-
-## Project Structure
-
-```
-Concourse/
-├── frontend/                    # React + Vite + Tailwind
-│   ├── src/pages/
-│   │   ├── RegistrationPortal.tsx    # Merchant onboarding
-│   │   ├── Explorer.tsx              # Browse & test merchant skills
-│   │   └── AgentDemo.tsx             # AI agent chat interface
-│   ├── src/hooks/
-│   │   └── use0gCompute.ts           # Decentralized LLM hook
-│   └── src/contracts/
-│       └── MerchantRegistry.ts       # On-chain contract ABI
-├── backend/                     # FastAPI MCP Gateway
-│   ├── app/routers/mcp.py           # MCP tool endpoints
-│   ├── app/services/
-│   │   ├── merchant_service.py       # Discovery & lookup
-│   │   └── skill_service.py          # 12 merchant-aware skill handlers
-│   └── requirements.txt
-├── contracts/                   # Solidity (Hardhat 3)
-│   ├── contracts/MerchantRegistry.sol
-│   └── scripts/deploy.js
-├── agent/                       # Optional server-side agent
-│   └── server.js
-└── skills/                      # Client-side SKILL.md specs for personal agents
-    └── user-client/SKILL.md         # Discover → personalize → invoke loop
-```
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 19 + TypeScript + Vite + Tailwind v4 + ethers v6 |
-| Chain | **Base Sepolia** (testnet, live) → **Base mainnet** (canonical ERC-8004 registry) |
-| Smart contracts | Solidity 0.8.24 + Foundry — evmVersion `cancun`, optimizer 200, 73 tests at 100% coverage |
-| Merchant agent template | Hono 4 + Drizzle + better-sqlite3 + viem + Zod + vitest |
-| Auth | EIP-191 challenge → opaque bearer token (also EIP-712 for future booking-escrow) |
-| Standards | **ERC-8004** (Trustless Agents) + **A2A** (Agent Card) + **x402** (paid skills, planned) |
-| Hosting | Self-host (Fly.io / Railway / your VPS) · Vercel for frontend · Multi-tenant SaaS planned |
-| Optional LLM | Any OpenAI-compatible endpoint (Qiniu MaaS, OpenAI, 0G Compute, DeepSeek, Kimi …) |
-| Wallet | MetaMask / hardware wallets via ethers v6 / viem |
-
----
+| Resource | URL |
+|---|---|
+| npm | https://www.npmjs.com/package/@concourse-protocol/discover |
+| GitHub Releases | https://github.com/PakHeiPoon/Concourse/releases |
+| Live agent #1 | https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json |
+| Live indexer UI | https://concourse.paking.xyz |
 
 ## Roadmap
 
-The first agent on this protocol — `wumingchu.tourskill.paking.xyz` — is **live now** at agentId=1 on Base Sepolia.
-Any client can verify: `cast call --rpc-url https://sepolia.base.org 0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f 'getAgent(uint256)' 1`
+| Status | Phase |
+|---|---|
+| ✅ Live | ERC-8004 contracts on Base Sepolia, Basescan-verified, 73 tests passing |
+| ✅ Live | Merchant agent template (Hono + viem + EIP-191 auth, 5 hotel skills) |
+| ✅ Live | First agent — Wuming Chu · Huangshan (agentId=1) |
+| ✅ Live | Trustless `/explorer` — reads chain directly, browser-side SHA-256 verification |
+| ✅ Live | `@concourse-protocol/discover` CLI + MCP — zero-install protocol client |
+| 🟡 Building | Canonical mainnet via shared ERC-8004 address |
+| 🟡 Building | EIP-191 signed bearer auth in CLI |
+| 📋 Planned | x402 paid-skill USDC micropayments (EIP-3009) |
+| 📋 Planned | BookingEscrow (EIP-712 Seaport-style) + settlement-gated ReputationRegistry hook |
+| 📋 Planned | Multi-tenant SaaS hosting for non-technical merchants |
 
-| Tier | Status | Description |
-|---|---|---|
-| **Phase A.2 — Contracts** | ✅ Shipped | `IdentityRegistry`, `ReputationRegistry`, `ValidationRegistry` deployed + Basescan-verified on Base Sepolia |
-| **Phase A.3 — Merchant template** | ✅ Shipped | Open-source Hono template, 5 hotel skills, EIP-191 auth, canonical-JSON cards with SHA-256 |
-| **Phase A.5 — First live agent** | ✅ Shipped | Wuming Chu · Huangshan on Fly Tokyo, custom domain + LetsEncrypt cert, agentId=1 on chain |
-| **Phase A.7 — Trustless explorer** | ✅ Shipped | Frontend reads chain directly, hash-verifies served bytes, calls skills against agent URL — no backend proxy |
-| **Phase B-min — Canonical mainnet** | 🟡 Building | Switch `Deploy.s.sol` to use the shared mainnet ERC-8004 address (`0x8004A169…A432`) so [8004scan.io](https://8004scan.io) auto-indexes us |
-| **Phase B-mcp — MCP route** | 🟡 Building | Add MCP server endpoint alongside REST skills — Claude Desktop / GPT can use merchants as native tools |
-| **Phase C-1 — Frontend rewire** | 🟡 Building | Retire legacy 0G demo, MerchantSign writes to Base IdentityRegistry via MetaMask |
-| **Phase C-2 — x402 paid skills** | 📋 Planned | Stateless per-call USDC payments (EIP-3009), standard Coinbase x402 — separate from booking-level escrow |
-| **Phase C-3 — `@concourse/cli`** | 📋 Planned | Independent npm CLI: `concourse list`, `concourse show 1`, `concourse call <id> <skill>` |
-| **Phase D — BookingEscrow + reputation** | 📋 Planned | EIP-712 Seaport-style escrow with time-locked release; settled bookings auto-authorize feedback in ReputationRegistry |
-| **Phase E — Multi-tenant SaaS** | 📋 Planned | Platform-hosted runtime so 95% of merchants get zero-ops onboarding; free tier + paid tiers |
+See [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_PLAN.md) for the full plan.
 
-See [`docs/architecture/07_MIGRATION_PLAN.md`](./docs/architecture/07_MIGRATION_PLAN.md) for the canonical post-Phase-A roadmap and [`merchant-agent-template/TROUBLESHOOTING.md`](./merchant-agent-template/TROUBLESHOOTING.md) for real gotchas hit shipping agent #1.
+## Prove the platform is dispensable (adversarial test)
 
----
+```bash
+# 1. Pick any third-party RPC — not concourse.paking.xyz
+export CONCOURSE_RPC_URL=https://base-sepolia.public.blastapi.io
 
-## Star History
+# 2. Black-hole the Concourse frontend (optional)
+echo "0.0.0.0  concourse.paking.xyz" | sudo tee -a /etc/hosts
 
-<div align="center">
-  <a href="https://star-history.com/#PakHeiPoon/Concourse&Date">
-    <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date&theme=dark" />
-      <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date" />
-      <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=PakHeiPoon/Concourse&type=Date" width="700" />
-    </picture>
-  </a>
-</div>
+# 3. Run the full discover → verify → invoke loop. It should still succeed.
+npx -y @concourse-protocol/discover list
+npx -y @concourse-protocol/discover invoke 1 get_room_types
+```
 
----
+If this ever fails, the thesis is falsified — file an issue.
 
 ## License
 
-MIT
+[MIT](./LICENSE) — Copyright © 2026 Pak Hei Poon and Concourse Protocol contributors.
 
 ---
 
 <p align="center">
-  <sub>Concourse — Because your next trip should be between you and the merchant, not you and a platform.</sub>
+  <sub>Because your next transaction should be between you and the merchant, not you and a platform.</sub>
 </p>

@@ -18,13 +18,13 @@ import { useT } from '../i18n'
 import { ensureToken } from '../lib/auth'
 import InstallCredentialsCard from '../components/InstallCredentialsCard'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
 const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
 const CHAIN_ID = 16602
 const CHAIN_NAME = '0G Galileo testnet'
 
-const INSTALL_PROMPT = 'Install the Concourse skill from https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
-const SKILL_URL = 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md'
+const INSTALL_PROMPT = 'Install the Concourse skill from https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
+const SKILL_URL = 'https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
 
 interface Merchant {
   merchant_id: string

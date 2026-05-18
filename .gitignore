@@ -71,3 +71,37 @@ backend/sql/
 
 # Raw design docs (internal only)
 raw/
+
+# ──────────────────────────────────────────────────────────────
+# Internal-only / non-public materials (untracked since 2026-05)
+# ──────────────────────────────────────────────────────────────
+
+# Internal pitch decks, thesis-defense slides, NotebookLM artifacts
+docs/presentation/
+
+# Legacy brand assets (TourSkill → Concourse rebrand left these behind)
+docs/images/
+
+# Legacy 0G demo renders (not relevant to current ERC-8004 protocol)
+demos/
+
+# Early 0G experimental agent — superseded by merchant-agent-template
+agent/
+
+# Legacy Hardhat artifacts under contracts/ — superseded by contracts/erc8004/
+contracts/contracts/
+contracts/hardhat.config.js
+contracts/scripts/
+contracts/package.json
+contracts/package-lock.json
+contracts/.env.example
+
+# Old brand logos in frontend
+frontend/public/tourskill-logo.png
+
+# Large binary file types — review before adding back
+*.mp4
+*.mov
+*.psd
+*.sketch
+

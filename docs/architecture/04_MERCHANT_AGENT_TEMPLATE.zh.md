@@ -289,7 +289,7 @@ TENANT_ID=                                  # 跑在 Concourse 平台时设置
 
 - 所有 store 查询按 `tenantId` 限定（Postgres 行级过滤或 schema-per-tenant；v1 = 行级过滤求简）
 - `/admin/*` 路由要求 Concourse 签发的 JWT 标识 tenant + 授权动作
-- agent-card URL 是 `https://api.tourskill.paking.xyz/agents/<slug>/.well-known/agent-card.json`，而不是自定义域名（自定义域名是 Tier 2+ 特性）
+- agent-card URL 是 `https://api.concourse.paking.xyz/agents/<slug>/.well-known/agent-card.json`，而不是自定义域名（自定义域名是 Tier 2+ 特性）
 - 一个 tenant 的出站 HTTP 不能到达另一个 tenant 的存储 —— 由 Postgres RLS 强制
 
 **商家从平台 → 自托管的迁移做这些**：

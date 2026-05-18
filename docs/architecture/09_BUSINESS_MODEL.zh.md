@@ -66,7 +66,7 @@ URL 只是一个域名，DNS 让它可携带。
 - 1 个门店
 - 每月 ≤ 100 笔 settled booking
 - 默认 skill 集（无自定义 skill）
-- Concourse 子域名（`<slug>.merchants.tourskill.paking.xyz`）
+- Concourse 子域名（`<slug>.merchants.concourse.paking.xyz`）
 - 仅社区支持
 
 **为什么免费**：独立宿主、单门店 B&B、"参加黑客松"用例。**网络效应的发现表面**。我们承担成本；网络效应是回报。

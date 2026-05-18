@@ -24,7 +24,7 @@ def _now_iso(offset_hours: int = 0) -> str:
     return (datetime.now(TZ_CN) + timedelta(hours=offset_hours)).isoformat(timespec="seconds")
 
 
-def _name(merchant: Optional[dict], default_zh: str = "TourSkill 商家", default_en: str = "TourSkill Merchant") -> Dict[str, str]:
+def _name(merchant: Optional[dict], default_zh: str = "Concourse 商家", default_en: str = "Concourse Merchant") -> Dict[str, str]:
     if not merchant:
         return {"zh": default_zh, "en": default_en}
     n = merchant.get("name") or {}
@@ -170,7 +170,7 @@ def _create_booking(p: Dict[str, Any], m: Optional[dict]) -> Dict[str, Any]:
         "booking_id": booking_id,
         "status": "pending_confirmation",
         "confirmation_deadline": _now_iso(offset_hours=4),
-        "payment_url": f"https://pay.tourskill.local/booking/{booking_id}",
+        "payment_url": f"https://pay.concourse.local/booking/{booking_id}",
         "cancellation_policy": {"free_cancel_before": f"{_today(3)}T18:00:00+08:00"},
         "booking_hash": f"0x{uuid.uuid4().hex}",
     }
@@ -548,7 +548,7 @@ def _purchase_ticket(p: Dict[str, Any], m: Optional[dict]) -> Dict[str, Any]:
         "status": "pending_payment",
         "tickets": line_items,
         "total": {"amount": total, "currency": "CNY"},
-        "payment_url": f"https://tickets.tourskill.local/pay/{order_id}",
+        "payment_url": f"https://tickets.concourse.local/pay/{order_id}",
         "payment_deadline": _now_iso(offset_hours=1),
         "entry_method": {
             "zh": "凭身份证原件或订单二维码入园",

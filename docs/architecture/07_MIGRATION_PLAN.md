@@ -22,7 +22,7 @@ describes reality. When the two diverge, this section is authoritative.
 | **A.2 Contracts** | `IdentityRegistry`, `ReputationRegistry`, `ValidationRegistry` deployed + verified on Base Sepolia | `d9957ee` · [Basescan](https://sepolia.basescan.org/address/0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f#code) |
 | **A.3 Template** | `merchant-agent-template/` — Hono + Drizzle + better-sqlite3, 5 skills, 36 vitest tests | `721aee2` |
 | **A.4 sync-card** | viem-based register/update/no-op script with `--dry-run` and `--from-local` flags. **Live-URL-first**: hashes the bytes the URL actually serves, not the local store | `3f3dbef` + later fix (see §0.3) |
-| **A.5 Live deploy** | `wumingchu.tourskill.paking.xyz` on Fly.io (Tokyo, single shared-CPU machine, 1GB persistent volume), LetsEncrypt cert, DNSPod CNAME | `04c41b9` |
+| **A.5 Live deploy** | `wumingchu.concourse.paking.xyz` on Fly.io (Tokyo, single shared-CPU machine, 1GB persistent volume), LetsEncrypt cert, DNSPod CNAME | `04c41b9` |
 | **A.6 On-chain register** | agentId=1 written to IdentityRegistry; `getAgent(1)` returns the real `(owner, URI, hash, ts, ts, true)` tuple | tx [`0x88cf1987…43f970`](https://sepolia.basescan.org/tx/0x88cf198724a8b57b2d99b9aa293ed91400539dfc18019fde0bed01a8b443f970) |
 | **A.7 demo asset** | 17 s 1920×1080 MP4 walking the protocol round-trip (discovery → fetch → verify → call) with real on-chain + on-server data | `demos/protocol-flow/` |
 
@@ -54,7 +54,7 @@ The shipped state lets any third party discover & call our first agent end-to-en
 |---|---|---|
 | **B-min** | mainnet canonical registry switch in `Deploy.s.sol` | want 8004scan visibility |
 | **B-mcp** | MCP server route alongside REST skills on merchant-agent | want Claude Desktop / GPT to use the agent as a tool |
-| **C-1** | Frontend rewire: `tourskill.paking.xyz/explorer` reads Base IdentityRegistry; `/merchant/sign` writes to it | want real merchants onboarding via web UI |
+| **C-1** | Frontend rewire: `concourse.paking.xyz/explorer` reads Base IdentityRegistry; `/merchant/sign` writes to it | want real merchants onboarding via web UI |
 | **C-2** | x402 paid-skill MVP (separate from booking escrow) | want to test per-call micropayment plumbing |
 | **C-3** | Independent `@concourse/cli` package on npm | want easy SDK adoption |
 | **D** | BookingEscrow.sol + ReputationRegistry feedback flow | first real paying merchant asks for held-funds semantics |
@@ -75,8 +75,8 @@ The shipped state lets any third party discover & call our first agent end-to-en
 | `/mcp/tools/execute` endpoint | **Deleted**. User-agents talk to merchant-agents directly. |
 | 0G Compute integration in AgentDemo | **Kept**. Optional inference provider for any agent. |
 | Qiniu integration in AgentDemo | **Kept**. Optional inference provider. |
-| `tourskill.paking.xyz` domain + Vercel deploy | **Kept**. Same hosting story for the indexer + sign-ceremony pages. |
-| `api.tourskill.paking.xyz` FastAPI backend | **Kept** (slimmer). Auth + drafts + indexer cache + multi-tenant runtime. |
+| `concourse.paking.xyz` domain + Vercel deploy | **Kept**. Same hosting story for the indexer + sign-ceremony pages. |
+| `api.concourse.paking.xyz` FastAPI backend | **Kept** (slimmer). Auth + drafts + indexer cache + multi-tenant runtime. |
 
 ---
 
@@ -245,7 +245,7 @@ THEN you're on chain". This is the right friction; we're not hiding it.
 ## 6. Backend changes
 
 ```
-api.tourskill.paking.xyz/
+api.concourse.paking.xyz/
 ├── /health                                    [keep]
 ├── /v1/auth/challenge      [keep — flow unchanged]
 ├── /v1/auth/verify         [keep]
@@ -263,7 +263,7 @@ api.tourskill.paking.xyz/
 The deletion of `/mcp/*` is a **public API break**. We bump major version:
 
 ```
-Old: api.tourskill.paking.xyz/mcp/tools/execute
+Old: api.concourse.paking.xyz/mcp/tools/execute
 New: there isn't one — call the merchant-agent directly
 ```
 

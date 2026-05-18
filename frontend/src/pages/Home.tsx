@@ -15,8 +15,8 @@ import Roadmap from '../components/Roadmap'
 import { useT } from '../i18n'
 
 const SKILL_URLS = {
-  personal: 'https://api.tourskill.paking.xyz/skills/user-client/SKILL.md',
-  merchant: 'https://api.tourskill.paking.xyz/skills/merchant-client/SKILL.md',
+  personal: 'https://api.concourse.paking.xyz/skills/user-client/SKILL.md',
+  merchant: 'https://api.concourse.paking.xyz/skills/merchant-client/SKILL.md',
 } as const
 
 type AgentKind = keyof typeof SKILL_URLS

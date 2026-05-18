@@ -1,7 +1,7 @@
 # Troubleshooting
 
 Real failure modes hit while shipping the first Concourse agent
-(`wumingchu.tourskill.paking.xyz`, agentId=1 on Base Sepolia). Each
+(`wumingchu.concourse.paking.xyz`, agentId=1 on Base Sepolia). Each
 entry has the **symptom** (what you'll see), the **root cause**, and
 the **fix**. Read this before you debug — you're probably not the
 first to hit it.

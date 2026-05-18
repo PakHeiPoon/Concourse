@@ -13,7 +13,7 @@ def normalize_merchant(row: Dict[str, Any]) -> Dict[str, Any]:
     specific = row.get("specific_fields") or {}
     return {
         "merchant_id": merchant_id,
-        "did": row.get("did", f"did:tourskill:{merchant_id}"),
+        "did": row.get("did", f"did:concourse:{merchant_id}"),
         "type": row.get("merchant_type"),
         "name": {"en": row.get("name_en", ""), "zh": row.get("name_zh", "")},
         "description": {"en": row.get("description_en", ""), "zh": row.get("description_zh", "")},
@@ -118,7 +118,7 @@ def update_merchant(
 def create_merchant(payload: MerchantCreateRequest) -> Dict[str, Any]:
     client = get_supabase_client()
     merchant_id = f"merchant:{uuid.uuid4().hex[:12]}"
-    did = f"did:tourskill:{merchant_id}"
+    did = f"did:concourse:{merchant_id}"
     profile_data = {
         "merchant_id": merchant_id,
         "did": did,

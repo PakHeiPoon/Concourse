@@ -11,7 +11,7 @@
 #     RPC_URL=https://sepolia.base.org \
 #     USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e \
 #     AGENT_OWNER_ADDRESS=0x56b0666c4fe6F3BA5572aC7AC99AF7Ede58b67b4 \
-#     PUBLIC_URL=https://wumingchu.tourskill.paking.xyz
+#     PUBLIC_URL=https://wumingchu.concourse.paking.xyz
 #   fly deploy
 
 app = "concourse-wumingchu"

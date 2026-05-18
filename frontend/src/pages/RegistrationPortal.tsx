@@ -4,8 +4,8 @@ import { BrowserProvider, Contract } from 'ethers'
 import { MERCHANT_REGISTRY_ABI, MERCHANT_REGISTRY_ADDRESS, ZERO_G_CHAIN } from '../contracts/MerchantRegistry'
 import { useT } from '../i18n'
 
-// Same env contract used by every other page so prod hits api.tourskill.paking.xyz.
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
+// Same env contract used by every other page so prod hits api.concourse.paking.xyz.
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
 
 const SKILLS_BY_TYPE: Record<string, string> = {
   restaurant: 'get_menu,reserve_table,check_table_availability,get_dietary_options',

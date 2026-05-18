@@ -5,7 +5,7 @@ router = APIRouter()
 
 @router.get("/")
 def root() -> dict[str, str]:
-    return {"message": "Welcome to TourSkill Registry API"}
+    return {"message": "Welcome to Concourse Registry API"}
 
 
 @router.get("/health")

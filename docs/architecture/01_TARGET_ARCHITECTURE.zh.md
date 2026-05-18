@@ -149,7 +149,7 @@ Phase A 之后，后端的工作量大幅缩水。保留：
 - **Auth endpoints**：`/v1/auth/challenge`、`/v1/auth/verify` —— 与现状不变
 - **Draft endpoints**：`/v1/drafts/*` —— 用于签名仪式 URL 交接
 - **索引器缓存**：链上事件的只读 API（`/v1/discover` —— 同样的形状，但数据来自链上读取而不是伪造行）
-- **托管 runtime**（新，可选）：为 platform-hosted 商家跑他们的 merchant-agent 进程；URL 跟在 `https://api.tourskill.paking.xyz/agents/{merchant_slug}/...`
+- **托管 runtime**（新，可选）：为 platform-hosted 商家跑他们的 merchant-agent 进程；URL 跟在 `https://api.concourse.paking.xyz/agents/{merchant_slug}/...`
 
 什么被砍：
 - ❌ `skill_service.py` 和它的 12 个 mock handler —— **删掉**

@@ -70,7 +70,7 @@ Merchants can pay in fiat too via standard rails — same headline price.
 - 1 location
 - Up to 100 settled bookings/month
 - Default skill set (no custom skills)
-- Concourse subdomain (`<slug>.merchants.tourskill.paking.xyz`)
+- Concourse subdomain (`<slug>.merchants.concourse.paking.xyz`)
 - Community support only
 
 **Why free**: indie hosts, single-property B&Bs, the "show up at a hackathon" use case. Discovery surface for the network. We bear the cost; the network effect is the return.

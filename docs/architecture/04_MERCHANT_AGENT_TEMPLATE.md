@@ -301,7 +301,7 @@ When `TENANT_ID` is set, the agent runs in multi-tenant mode:
 
 - All store queries are scoped by `tenantId` (Postgres row-level filter or schema-per-tenant; v1 = row-level filter for simplicity)
 - The `/admin/*` routes require a Concourse-issued JWT identifying the tenant + their authorized actions
-- The agent-card URL is `https://api.tourskill.paking.xyz/agents/<slug>/.well-known/agent-card.json` instead of a custom domain (custom domain is a Tier 2+ feature)
+- The agent-card URL is `https://api.concourse.paking.xyz/agents/<slug>/.well-known/agent-card.json` instead of a custom domain (custom domain is a Tier 2+ feature)
 - Outbound HTTP from one tenant cannot reach another tenant's storage — enforced by Postgres RLS
 
 **A merchant migrating from platform → self-hosted does:**

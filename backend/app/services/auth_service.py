@@ -84,7 +84,7 @@ def create_challenge(wallet_address: str) -> Dict[str, Any]:
         # Human-readable message so the user sees what they're signing in
         # MetaMask. EIP-191 personal_sign prepends its own preamble.
         message = (
-            "TourSkill — authorize this agent session\n\n"
+            "Concourse — authorize this agent session\n\n"
             f"Wallet: {wallet}\n"
             f"Nonce:  {nonce}\n"
             f"Expires: {expires.isoformat()}\n\n"

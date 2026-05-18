@@ -20,7 +20,7 @@
 
 import { BrowserProvider } from 'ethers'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
 const STORAGE_PREFIX = 'concourse_auth:'
 
 interface StoredSession {

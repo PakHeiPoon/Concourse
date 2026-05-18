@@ -109,11 +109,9 @@ function Layout() {
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-10">
               <Link to="/" className="flex items-center space-x-2 group">
-                <img
-                  src="/tourskill-logo.png"
-                  alt="Concourse logo"
-                  className="w-10 h-10 rounded-xl object-cover group-hover:scale-105 transition-transform duration-300"
-                />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-text font-bold group-hover:scale-105 transition-transform duration-300">
+                  C
+                </div>
                 <span className="text-xl font-bold tracking-tight text-text">
                   Concourse
                 </span>
@@ -203,7 +201,7 @@ function Layout() {
           <div className="flex space-x-6">
             <a href="https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.contract')}</a>
-            <a href="https://api.tourskill.paking.xyz/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
+            <a href="https://api.concourse.paking.xyz/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.skillMd')}</a>
             <a href="https://github.com/PakHeiPoon/Concourse" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.github')}</a>

@@ -11,7 +11,7 @@ router = APIRouter()
 MCP_TOOLS = [
     {
         "name": "discover_merchants",
-        "description": "Search the TourSkill decentralized registry for tourism merchants (hotels, restaurants, attractions) by city, type, or keyword.",
+        "description": "Search the Concourse decentralized registry for tourism merchants (hotels, restaurants, attractions) by city, type, or keyword.",
         "inputSchema": {
             "type": "object",
             "properties": {

@@ -150,7 +150,7 @@ After Phase A, the backend's job shrinks dramatically. It keeps:
 - **Auth endpoints**: `/v1/auth/challenge`, `/v1/auth/verify` — unchanged from current
 - **Draft endpoints**: `/v1/drafts/*` — for the sign-ceremony URL hand-off
 - **Indexer cache**: read-only API over chain events (`/v1/discover` — same shape, but populated from chain reads instead of fabricated rows)
-- **Managed runtime** (new, optional): for platform-hosted merchants, we run their merchant-agent process; URLs follow `https://api.tourskill.paking.xyz/agents/{merchant_slug}/...`
+- **Managed runtime** (new, optional): for platform-hosted merchants, we run their merchant-agent process; URLs follow `https://api.concourse.paking.xyz/agents/{merchant_slug}/...`
 
 What it loses:
 - ❌ `skill_service.py` and all 12 mock handlers — **deleted**

@@ -23,7 +23,7 @@ What this does NOT prove (by design — no browser, no MetaMask):
 
 Run:
   python -m scripts.e2e_draft_flow                         # hits localhost:8000
-  BASE=https://api.tourskill.paking.xyz python -m scripts.e2e_draft_flow
+  BASE=https://api.concourse.paking.xyz python -m scripts.e2e_draft_flow
 """
 
 from __future__ import annotations

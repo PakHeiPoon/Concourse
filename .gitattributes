@@ -1,0 +1,37 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Markdown / text — explicit
+*.md   text diff=markdown
+*.txt  text
+*.json text
+*.yml  text
+*.yaml text
+
+# Source code
+*.ts   text diff=typescript
+*.tsx  text diff=typescript
+*.js   text diff=javascript
+*.jsx  text diff=javascript
+*.sol  text
+*.py   text diff=python
+
+# Binary — never diff
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.svg  text
+*.pdf  binary
+*.pptx binary
+*.docx binary
+*.xlsx binary
+*.mp4  binary
+*.mov  binary
+*.mp3  binary
+*.zip  binary
+
+# Lockfiles — collapsed in PR diffs
+pnpm-lock.yaml linguist-generated=true -diff
+package-lock.json linguist-generated=true -diff
+yarn.lock linguist-generated=true -diff

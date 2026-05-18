@@ -7,7 +7,7 @@ from app.routers.mcp import router as mcp_router
 from app.routers.merchant import router as merchant_router
 from app.routers.skills import router as skills_router
 
-app = FastAPI(title="TourSkill Registry API")
+app = FastAPI(title="Concourse Registry API")
 
 # Public API — agents call from varied origins (Claude Code, Cursor, browser
 # frontends). Allow all origins; credentials disabled (incompatible with "*"

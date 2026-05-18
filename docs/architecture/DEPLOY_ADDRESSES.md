@@ -10,7 +10,7 @@ discoverable for forensic / archival reasons.
 
 | agentId | owner | URI | hash | active | notes |
 |---|---|---|---|---|---|
-| **1** | `0x56b0666c4fe6F3BA5572aC7AC99AF7Ede58b67b4` | `https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json` | `0x26219e91…22f7bd` | ✅ active | Wuming Chu · Huangshan. Originally registered at `wumingchu.tourskill.paking.xyz` (hash `0x1304af2b…22f114`); migrated 2026-05-15 via `update(1, …)` tx [`0x95316b23…1a6efe`](https://sepolia.basescan.org/tx/0x95316b23f0002d262facebc05586cb996a55f4b845f4291d6b2725b0e61a6efe). |
+| **1** | `0x56b0666c4fe6F3BA5572aC7AC99AF7Ede58b67b4` | `https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json` | `0x26219e91…22f7bd` | ✅ active | Wuming Chu · Huangshan. Originally registered at `wumingchu.concourse.paking.xyz` (hash `0x1304af2b…22f114`); migrated 2026-05-15 via `update(1, …)` tx [`0x95316b23…1a6efe`](https://sepolia.basescan.org/tx/0x95316b23f0002d262facebc05586cb996a55f4b845f4291d6b2725b0e61a6efe). |
 | 2 | `0x56b0666c4fe6F3BA5572aC7AC99AF7Ede58b67b4` | `https://wumingchu.concourse.paking.xyz/.well-known/agent-card.json` | `0x26219e91…22f7bd` | 🚫 retired | Accidental duplicate produced by sync-card pre-guardrail (empty `AGENT_ID=` line). Deactivated 2026-05-15 via `setActive(2, false)` tx [`0x3f78be1e…b5c69e7`](https://sepolia.basescan.org/tx/0x3f78be1e5662a40c4b585c3ce9c43a076b9bb6e8aba2cee954a63ef79b5c69e7). Kept on chain (immutable history). |
 
 > Live snapshot: `cast call --rpc-url https://sepolia.base.org 0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f 'getAgent(uint256)((address,string,bytes32,uint64,uint64,bool))' 1`
