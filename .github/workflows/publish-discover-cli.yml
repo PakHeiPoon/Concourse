@@ -1,4 +1,4 @@
-name: Publish @concourse-protocol-protocol/discover
+name: Publish @concourse-protocol/discover
 
 # Auto-publish to npm when a tag matching `discover-cli-v*` is pushed.
 # Example: `git tag discover-cli-v0.1.0 && git push --tags`
@@ -70,12 +70,14 @@ jobs:
         run: npm publish --access public --dry-run --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm
         if: github.event.inputs.dry_run != 'true'
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Pack tarball for GitHub Release attachment
         if: startsWith(github.ref, 'refs/tags/discover-cli-v') && github.event.inputs.dry_run != 'true'
@@ -90,18 +92,18 @@ jobs:
           generate_release_notes: true
           files: packages/discover-cli/concourse-discover-*.tgz
           body: |
-            **@concourse-protocol-protocol/discover** — discover, verify, and invoke ERC-8004 / A2A agents directly from chain.
+            **@concourse-protocol/discover** — discover, verify, and invoke ERC-8004 / A2A agents directly from chain.
 
             Install:
             ```bash
-            npx -y @concourse-protocol-protocol/discover@${{ github.ref_name }} list
+            npx -y @concourse-protocol/discover@${{ github.ref_name }} list
             # or
-            npm i -g @concourse-protocol-protocol/discover@${{ github.ref_name }}
+            npm i -g @concourse-protocol/discover@${{ github.ref_name }}
             ```
 
             MCP server (Claude Desktop / Cursor):
             ```json
-            {"mcpServers":{"concourse":{"command":"npx","args":["-y","@concourse-protocol-protocol/discover","concourse-mcp"]}}}
+            {"mcpServers":{"concourse":{"command":"npx","args":["-y","@concourse-protocol/discover","concourse-mcp"]}}}
             ```
 
             Auto-generated release notes follow.

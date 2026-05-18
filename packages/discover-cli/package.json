@@ -1,6 +1,6 @@
 {
   "name": "@concourse-protocol/discover",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0-alpha.3",
   "description": "Discover, verify, and invoke ERC-8004 / A2A agents directly from chain — no platform required.",
   "license": "MIT",
   "repository": {
