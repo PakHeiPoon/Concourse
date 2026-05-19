@@ -15,6 +15,10 @@
   <a href="./README_ZH.md"><img src="https://img.shields.io/badge/中文-Readme-orange" alt="中文" /></a>
 </p>
 
+<p align="center">
+  <img src="docs/diagrams/architecture-protocol.png" alt="Concourse 3-layer architecture + 4-step P2P protocol — no gateway between layers" width="900" />
+</p>
+
 ---
 
 ## Thesis

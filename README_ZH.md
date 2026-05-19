@@ -15,6 +15,10 @@
   <a href="./README.md"><img src="https://img.shields.io/badge/English-Readme-blue" alt="English" /></a>
 </p>
 
+<p align="center">
+  <img src="docs/diagrams/architecture-protocol.png" alt="Concourse 三层架构 + 四步 P2P 协议 — 三层之间没有任何 Concourse 网关" width="900" />
+</p>
+
 ---
 
 ## 论文命题
