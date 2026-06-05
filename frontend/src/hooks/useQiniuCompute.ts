@@ -1,19 +1,12 @@
 /**
- * Qiniu AIGC (七牛云) compute hook — alternative to use0gCompute that
- * uses a plain OpenAI-compatible API key instead of a wallet ledger.
+ * Qiniu AIGC (七牛云) compute hook — the agent's inference provider.
  *
- * Why this exists alongside use0gCompute:
- *   - 0G Compute is the "decentralized identity + pay-per-call" story we
- *     pitch on stage; great for the demo but requires MetaMask + 0G token
- *     deposit, which isn't viable for everyone.
- *   - Qiniu AIGC offers the same OpenAI/Anthropic-compatible chat surface
- *     against a marketplace of 50+ Chinese-friendly models (DeepSeek-V3.2,
- *     Kimi-K2, GLM-5, Qwen3, MiniMax, etc.) authenticated by a single
- *     API key — much lower friction for visitors who just want to play
- *     with the agent.
+ * Uses a plain OpenAI-compatible API key against a marketplace of 50+
+ * Chinese-friendly models (DeepSeek-V3.2, Kimi-K2, GLM-5, Qwen3, MiniMax,
+ * etc.). Low friction: a single API key, no wallet ledger or token deposit.
  *
- * Surface mirrors use0gCompute on purpose so AgentDemo can swap providers
- * with minimal call-site logic.
+ * Shared tool/prompt definitions live in ./agentTools so any future
+ * provider can reuse them.
  */
 
 import { useCallback, useRef, useState } from 'react'
@@ -24,7 +17,7 @@ import {
   SYSTEM_PROMPT,
   TOOL_DEFINITIONS,
   executeMcpTool,
-} from './use0gCompute'
+} from './agentTools'
 
 const QINIU_BASE = 'https://api.qnaigc.com/v1'
 

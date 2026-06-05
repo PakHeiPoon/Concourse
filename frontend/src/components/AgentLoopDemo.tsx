@@ -50,7 +50,7 @@ const SCRIPT: DemoLine[] = [
   { kind: 'header', text: '[Step 4/4] POST /v1/merchants/{merchant_id}/reserve_table', delay: 700 },
   { kind: 'success', text: '✓ Reservation RES-69CB7F4B confirmed' },
   { kind: 'success', text: '✓ Tomorrow 19:00 · party of 4 · window seat' },
-  { kind: 'success', text: '✓ x402 settlement: 0.0021 0G  ·  hash: 0xb496f9ee…' },
+  { kind: 'success', text: '✓ x402 settlement: 0.50 USDC  ·  hash: 0xb496f9ee…' },
   { kind: 'spacer', text: '' },
 
   { kind: 'header', text: 'Done in 4 calls · no OTA · agent-to-agent.', delay: 500 },

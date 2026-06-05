@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { ShieldCheck, ExternalLink, Copy, Check, X } from 'lucide-react'
 
-const REGISTRY_CONTRACT = '0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543'
-const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
-const CHAINSCAN_TX = 'https://chainscan-galileo.0g.ai/tx'
+const REGISTRY_CONTRACT = '0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f'
+const CHAINSCAN_ADDRESS = 'https://sepolia.basescan.org/address'
+const CHAINSCAN_TX = 'https://sepolia.basescan.org/tx'
 
 interface OnChainBadgeProps {
   walletAddress?: string | null
@@ -123,7 +123,7 @@ export default function OnChainBadge({ walletAddress, did, profileHash, register
                     rel="noreferrer"
                     className="ml-auto inline-flex items-center gap-1 text-primary hover:text-primary-hover font-sans font-medium"
                   >
-                    <span>chainscan</span>
+                    <span>Basescan</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </dd>
@@ -174,14 +174,14 @@ export default function OnChainBadge({ walletAddress, did, profileHash, register
               rel="noreferrer"
               className="mt-4 flex items-center justify-center gap-1.5 w-full px-3 py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary-hover transition-colors"
             >
-              <span>View register tx on chainscan</span>
+              <span>View register tx on Basescan</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           )}
 
           <p className="mt-3 pt-3 border-t border-border text-[10px] text-text-muted leading-relaxed">
-            Anchored on 0G Galileo testnet (chainId 16602) via the
-            ERC-8004 MerchantRegistry contract.
+            Anchored on Base Sepolia (chainId 84532) via the
+            ERC-8004 IdentityRegistry contract.
           </p>
         </div>
       )}

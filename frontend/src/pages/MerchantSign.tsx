@@ -5,10 +5,13 @@ import { AlertCircle, CheckCircle2, Clock, ExternalLink, Loader2, Pencil, Shield
 
 import InstallCredentialsCard from '../components/InstallCredentialsCard'
 import {
-  MERCHANT_REGISTRY_ABI,
-  MERCHANT_REGISTRY_ADDRESS,
-  ZERO_G_CHAIN,
-} from '../contracts/MerchantRegistry'
+  IDENTITY_REGISTRY_ADDRESS,
+  IDENTITY_REGISTRY_WRITE_ABI,
+  BASE_SEPOLIA,
+  BASE_SEPOLIA_HEX,
+  BASE_SEPOLIA_ADD_PARAMS,
+  fetchCardAndHash,
+} from '../contracts/identityRegistry'
 import { useT } from '../i18n'
 import { mintToken } from '../lib/auth'
 
@@ -190,87 +193,37 @@ export default function MerchantSign() {
         throw new Error(createBody?.detail || 'Off-chain save failed')
       }
       const merchantId: string = createBody?.data?.merchant_id
-      const did: string = createBody?.data?.did
-      const profileHash: string = createBody?.data?.profile_hash
-      const skillEndpoint = `${API_BASE}/v1/merchants/${merchantId}`
 
-      // Step 2: on-chain register (MetaMask prompt)
+      // The agent card URI is the endpoint that serves this merchant's JSON.
+      // ERC-8004 commits a SHA-256 of the *served bytes* on-chain, so we fetch
+      // exactly what discover-cli will later fetch and hash that — guaranteeing
+      // the verify step (sha256(fetched) === on-chain hash) passes.
+      const agentCardURI = `${API_BASE}/v1/merchants/${merchantId}`
+      const { hash: agentCardHash } = await fetchCardAndHash(agentCardURI)
+
+      // Step 2: on-chain register on Base Sepolia (MetaMask prompt)
       setPhase('chain')
       const eth = (window as Window & { ethereum?: unknown }).ethereum
       if (!eth) throw new Error('MetaMask not found')
       const provider = new BrowserProvider(eth as any)
 
-      // Ensure correct chain
+      // Ensure wallet is on Base Sepolia
       try {
-        await provider.send('wallet_switchEthereumChain', [
-          { chainId: '0x' + ZERO_G_CHAIN.chainId.toString(16) },
-        ])
+        await provider.send('wallet_switchEthereumChain', [{ chainId: BASE_SEPOLIA_HEX }])
       } catch (switchErr: unknown) {
         if ((switchErr as { code?: number }).code === 4902) {
-          await provider.send('wallet_addEthereumChain', [
-            {
-              chainId: '0x' + ZERO_G_CHAIN.chainId.toString(16),
-              chainName: ZERO_G_CHAIN.name,
-              rpcUrls: [ZERO_G_CHAIN.rpcUrl],
-              nativeCurrency: { name: 'A0GI', symbol: 'A0GI', decimals: 18 },
-            },
-          ])
+          await provider.send('wallet_addEthereumChain', [BASE_SEPOLIA_ADD_PARAMS])
         } else {
           throw switchErr
         }
       }
 
       const signer = await provider.getSigner()
-      const registry = new Contract(MERCHANT_REGISTRY_ADDRESS, MERCHANT_REGISTRY_ABI, signer)
+      const registry = new Contract(IDENTITY_REGISTRY_ADDRESS, IDENTITY_REGISTRY_WRITE_ABI, signer)
 
-      // Known ethers v6 + 0G testnet RPC quirk: eth_sendTransaction can
-      // throw "could not coalesce error / Transaction failed" with an
-      // empty originalError, even though the tx actually broadcasts and
-      // mines successfully. We optimistically attempt the standard call,
-      // then on that specific error pattern we verify on-chain state
-      // (getMerchant) before declaring failure — the user shouldn't see
-      // a red error toast for a tx that actually went through.
-      let txHash: string = ''
-      try {
-        const tx = await registry.register(
-          did,
-          formData.merchant_type,
-          profileHash,
-          `supabase://${merchantId}`,
-          skillEndpoint,
-        )
-        const receipt = await tx.wait()
-        txHash = receipt.hash
-      } catch (chainErr: unknown) {
-        const errMsg = chainErr instanceof Error ? chainErr.message : String(chainErr)
-        const isLikelyFalsePositive =
-          errMsg.includes('could not coalesce') ||
-          errMsg.includes('Transaction failed')
-
-        if (!isLikelyFalsePositive) throw chainErr
-
-        // Wait a few seconds for the tx to propagate, then verify via
-        // a read-only contract instance.
-        await new Promise(resolve => setTimeout(resolve, 4000))
-        const readContract = new Contract(MERCHANT_REGISTRY_ADDRESS, MERCHANT_REGISTRY_ABI, provider)
-        const stored = await readContract.getMerchant(did)
-        if (stored.owner.toLowerCase() !== wallet.toLowerCase()) {
-          // Genuine failure — surface the original error.
-          throw chainErr
-        }
-        // Tx actually went through. Try to recover the hash from the
-        // MerchantRegistered event (best-effort — fall back to empty).
-        try {
-          const events = await readContract.queryFilter(
-            readContract.filters.MerchantRegistered(did),
-            -2000,
-          )
-          txHash = events[events.length - 1]?.transactionHash ?? ''
-        } catch {
-          /* ignore — we know the merchant is on-chain */
-        }
-        console.warn('Recovered from ethers/0G false-positive — merchant is on-chain', { did, txHash })
-      }
+      const tx = await registry.register(agentCardURI, agentCardHash)
+      const receipt = await tx.wait()
+      const txHash: string = receipt.hash
 
       // Step 3: bind — free personal_sign that mints an opaque bearer
       // token. This is what lets the agent PATCH without the owner's
@@ -354,7 +307,7 @@ export default function MerchantSign() {
             </Link>
             {result.txHash && (
               <a
-                href={`${ZERO_G_CHAIN.explorerUrl}/tx/${result.txHash}`}
+                href={`${BASE_SEPOLIA.explorerUrl}/tx/${result.txHash}`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 text-primary hover:text-primary-dark text-sm font-medium"
@@ -480,7 +433,7 @@ export default function MerchantSign() {
       )}
 
       <p className="mt-6 text-xs text-text-muted text-center" lang={lang}>
-        Chain ID {ZERO_G_CHAIN.chainId} · {ZERO_G_CHAIN.name}
+        Chain ID {BASE_SEPOLIA.chainId} · {BASE_SEPOLIA.name}
       </p>
     </div>
   )

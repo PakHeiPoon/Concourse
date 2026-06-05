@@ -1,7 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Store, CheckCircle2, ChevronRight, Loader2, ArrowRight, Wallet, Link2, FlaskConical } from 'lucide-react'
 import { BrowserProvider, Contract } from 'ethers'
-import { MERCHANT_REGISTRY_ABI, MERCHANT_REGISTRY_ADDRESS, ZERO_G_CHAIN } from '../contracts/MerchantRegistry'
+import {
+  IDENTITY_REGISTRY_ADDRESS,
+  IDENTITY_REGISTRY_WRITE_ABI,
+  BASE_SEPOLIA,
+  BASE_SEPOLIA_HEX,
+  BASE_SEPOLIA_ADD_PARAMS,
+  fetchCardAndHash,
+} from '../contracts/identityRegistry'
 import { useT } from '../i18n'
 
 // Same env contract used by every other page so prod hits api.concourse.paking.xyz.
@@ -245,13 +252,19 @@ export default function RegistrationPortal() {
       const returnedDid = data?.data?.did || ''
       const returnedId = data?.data?.merchant_id || ''
       const returnedHash = data?.data?.profile_hash || ''
-      const skillEndpoint = `${API_BASE}/v1/merchants/${returnedId}`
 
       setDid(returnedDid)
       setMerchantId(returnedId)
       setProfileHash(returnedHash)
 
-      // Step 2: Register on-chain via MetaMask
+      // The agent card URI is the endpoint serving this merchant's JSON.
+      // ERC-8004 commits a SHA-256 of the *served bytes* on-chain, so we hash
+      // exactly what discover-cli will later fetch — the verify step
+      // (sha256(fetched) === on-chain hash) then passes by construction.
+      const agentCardURI = `${API_BASE}/v1/merchants/${returnedId}`
+      const { hash: agentCardHash } = await fetchCardAndHash(agentCardURI)
+
+      // Step 2: Register on-chain via MetaMask (Base Sepolia)
       setChainLoading(true)
       const eth = (window as Window & { ethereum?: unknown }).ethereum
       if (!eth) {
@@ -260,36 +273,21 @@ export default function RegistrationPortal() {
 
       const provider = new BrowserProvider(eth as any)
 
-      // Ensure user is on 0G Testnet
+      // Ensure wallet is on Base Sepolia
       try {
-        await provider.send('wallet_switchEthereumChain', [
-          { chainId: '0x' + ZERO_G_CHAIN.chainId.toString(16) },
-        ])
+        await provider.send('wallet_switchEthereumChain', [{ chainId: BASE_SEPOLIA_HEX }])
       } catch (switchErr: unknown) {
         if ((switchErr as { code?: number }).code === 4902) {
-          await provider.send('wallet_addEthereumChain', [
-            {
-              chainId: '0x' + ZERO_G_CHAIN.chainId.toString(16),
-              chainName: ZERO_G_CHAIN.name,
-              rpcUrls: [ZERO_G_CHAIN.rpcUrl],
-              nativeCurrency: { name: 'A0GI', symbol: 'A0GI', decimals: 18 },
-            },
-          ])
+          await provider.send('wallet_addEthereumChain', [BASE_SEPOLIA_ADD_PARAMS])
         } else {
           throw switchErr
         }
       }
 
       const signer = await provider.getSigner()
-      const registry = new Contract(MERCHANT_REGISTRY_ADDRESS, MERCHANT_REGISTRY_ABI, signer)
+      const registry = new Contract(IDENTITY_REGISTRY_ADDRESS, IDENTITY_REGISTRY_WRITE_ABI, signer)
 
-      const tx = await registry.register(
-        returnedDid,
-        form.merchant_type,
-        returnedHash,
-        `supabase://${returnedId}`,
-        skillEndpoint,
-      )
+      const tx = await registry.register(agentCardURI, agentCardHash)
       const receipt = await tx.wait()
       setTxHash(receipt.hash)
 
@@ -351,7 +349,7 @@ export default function RegistrationPortal() {
                   <Link2 className="w-3 h-3" /> {t('register.success.tx')}
                 </label>
                 <a
-                  href={`${ZERO_G_CHAIN.explorerUrl}/tx/${txHash}`}
+                  href={`${BASE_SEPOLIA.explorerUrl}/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-mono text-sm bg-white border border-slate-200 px-3 py-2 rounded-lg text-emerald-700 break-all block hover:bg-emerald-50 hover:border-emerald-300 transition-colors cursor-pointer"

@@ -20,9 +20,9 @@ import {
 } from 'lucide-react'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
-const REGISTRY_CONTRACT = '0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543'
-const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
-const CHAINSCAN_TX = 'https://chainscan-galileo.0g.ai/tx'
+const REGISTRY_CONTRACT = '0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f'
+const CHAINSCAN_ADDRESS = 'https://sepolia.basescan.org/address'
+const CHAINSCAN_TX = 'https://sepolia.basescan.org/tx'
 
 interface Merchant {
   merchant_id: string
@@ -258,7 +258,7 @@ export default function MerchantDetail(): React.JSX.Element {
                   <CopyableHex value={merchant.wallet_address} label="wallet" />
                   <a href={`${CHAINSCAN_ADDRESS}/${merchant.wallet_address}`} target="_blank" rel="noreferrer"
                      className="inline-flex items-center gap-1 text-primary hover:text-primary-hover text-xs font-semibold shrink-0">
-                    chainscan <ExternalLink className="w-3 h-3" />
+                    Basescan <ExternalLink className="w-3 h-3" />
                   </a>
                 </dd>
               </div>

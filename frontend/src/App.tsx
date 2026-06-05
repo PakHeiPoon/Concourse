@@ -199,7 +199,7 @@ function Layout() {
             {t('footer.copy')}
           </p>
           <div className="flex space-x-6">
-            <a href="https://chainscan-galileo.0g.ai/address/0x18B9AbB94eeaCbAbc6bFECB7143165AF6E0df543" target="_blank" rel="noreferrer"
+            <a href="https://sepolia.basescan.org/address/0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.contract')}</a>
             <a href="https://api.concourse.paking.xyz/skills/user-client/SKILL.md" target="_blank" rel="noreferrer"
                className="text-sm text-text-muted hover:text-primary transition-colors">{t('footer.skillMd')}</a>
