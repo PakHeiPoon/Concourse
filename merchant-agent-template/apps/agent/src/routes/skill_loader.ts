@@ -22,6 +22,7 @@ import get_rates                from './skills/get_rates.js';
 import create_booking           from './skills/create_booking.js';
 import get_cancellation_policy  from './skills/get_cancellation_policy.js';
 import get_room_types           from './skills/get_room_types.js';
+import get_concierge_recommendation from './skills/get_concierge_recommendation.js';
 
 export const skills: SkillDef<unknown, unknown>[] = [
   check_availability       as unknown as SkillDef<unknown, unknown>,
@@ -29,4 +30,5 @@ export const skills: SkillDef<unknown, unknown>[] = [
   create_booking           as unknown as SkillDef<unknown, unknown>,
   get_cancellation_policy  as unknown as SkillDef<unknown, unknown>,
   get_room_types           as unknown as SkillDef<unknown, unknown>,
+  get_concierge_recommendation as unknown as SkillDef<unknown, unknown>,
 ];

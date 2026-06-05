@@ -27,6 +27,7 @@ import {
 import { buildAgentCard, cardHash, canonicalJson } from './core/card.js';
 import { SkillError, type SkillContext, type AgentConfig, type MerchantStore } from './core/types.js';
 import { skills } from './routes/skill_loader.js';
+import { isPaid, paymentRequirements, verifyAndSettle, paymentResponseHeader, PaymentError } from './core/x402.js';
 
 import packageJson from '../package.json' with { type: 'json' };
 
@@ -135,6 +136,26 @@ for (const skill of skills) {
       }, 400);
     }
 
+    // x402 gate (paid skills only). No payment → 402 + requirements.
+    // With a valid X-PAYMENT header → verify the EIP-3009 authorization and
+    // settle the USDC transfer on-chain before running the skill.
+    let payment = null;
+    if (isPaid(skill)) {
+      const xPayment = c.req.header('X-PAYMENT');
+      const resourceUrl = `${config.publicUrl}${skill.endpoint}`;
+      if (!xPayment) {
+        return c.json(paymentRequirements(skill, config.payoutAddress, resourceUrl), 402);
+      }
+      try {
+        payment = await verifyAndSettle(xPayment, skill, config.payoutAddress);
+      } catch (err) {
+        if (err instanceof PaymentError) {
+          return c.json({ error: 'PAYMENT_INVALID', skill: skill.name, message: err.message }, 402);
+        }
+        throw err;
+      }
+    }
+
     // Build skill context (lazily; LLM only created if config has provider)
     const ctx: SkillContext = {
       store,
@@ -144,13 +165,14 @@ for (const skill of skills) {
     };
 
     try {
-      const result = await skill.handle({ input: parsedInput.data, ctx, payment: null });
+      const result = await skill.handle({ input: parsedInput.data, ctx, payment });
       // Validate output (catches handler regressions)
       const parsedOutput = skill.outputSchema.safeParse(result);
       if (!parsedOutput.success) {
         console.error('skill output schema mismatch', skill.name, parsedOutput.error.issues);
         return c.json({ error: 'INTERNAL_OUTPUT_INVALID', skill: skill.name }, 500);
       }
+      if (payment) c.header('X-PAYMENT-RESPONSE', paymentResponseHeader(payment));
       return c.json(parsedOutput.data);
     } catch (err) {
       if (err instanceof SkillError) {
