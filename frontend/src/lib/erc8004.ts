@@ -25,6 +25,7 @@ export const IDENTITY_REGISTRY_ADDRESS =
 const IDENTITY_REGISTRY_ABI = [
   'function totalAgents() view returns (uint256)',
   'function getAgent(uint256 agentId) view returns (tuple(address owner, string agentCardURI, bytes32 agentCardHash, uint64 registeredAt, uint64 updatedAt, bool active))',
+  'function getAgentsByOwner(address owner) view returns (uint256[])',
 ] as const
 
 export interface OnChainAgent {
@@ -81,6 +82,20 @@ export async function listAllAgents(): Promise<OnChainAgent[]> {
   const ids = Array.from({ length: total }, (_, i) => i + 1)
   const all = await Promise.all(ids.map(getAgent))
   return all.filter((a) => a.active)
+}
+
+/**
+ * Agents owned by a wallet, read straight from the chain (no backend).
+ * This is the source of truth for "my merchants" — whatever the wallet
+ * registered on the IdentityRegistry shows up here, with no indexer in
+ * the path.
+ */
+export async function getAgentsByOwner(owner: string): Promise<OnChainAgent[]> {
+  if (!owner) return []
+  const ids: bigint[] = await registry().getAgentsByOwner(owner)
+  if (ids.length === 0) return []
+  const agents = await Promise.all(ids.map((id) => getAgent(Number(id))))
+  return agents
 }
 
 // ─── SHA-256 verification (browser-side) ─────────────────────────────

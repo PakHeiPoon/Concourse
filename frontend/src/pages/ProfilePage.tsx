@@ -11,29 +11,30 @@ import {
   ShieldCheck,
   Loader2,
   PlusCircle,
-  Pause,
-  CircleDot,
 } from 'lucide-react'
 import { useT } from '../i18n'
-import { ensureToken } from '../lib/auth'
+import { getAgentsByOwner, fetchAndHashCard } from '../lib/erc8004'
 import InstallCredentialsCard from '../components/InstallCredentialsCard'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
-const CHAINSCAN_ADDRESS = 'https://chainscan-galileo.0g.ai/address'
-const CHAIN_ID = 16602
-const CHAIN_NAME = '0G Galileo testnet'
+const CHAINSCAN_ADDRESS = 'https://sepolia.basescan.org/address'
+const CHAIN_ID = 84532
+const CHAIN_NAME = 'Base Sepolia'
 
 const INSTALL_PROMPT = 'Install the Concourse skill from https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
 const SKILL_URL = 'https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
 
-interface Merchant {
-  merchant_id: string
-  did: string
-  type: string
-  name: { en: string; zh: string }
-  location: { city: string; country: string; address: string }
-  skills: string[]
-  status?: 'active' | 'inactive'
+// "My merchants" reads straight from the ERC-8004 IdentityRegistry on Base —
+// whatever this wallet registered on-chain shows up here, with no backend
+// indexer in the path. Each owned agentId's card is fetched and SHA-256
+// verified against the on-chain commit.
+interface OwnedAgent {
+  agentId:    number
+  name:       { en: string; zh: string }
+  type:       string
+  city:       string
+  skillCount: number
+  cardURI:    string
+  verified:   boolean
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -66,40 +67,9 @@ function typeBadge(type: string): string {
 export default function ProfilePage(): React.JSX.Element {
   const { t, lang } = useT()
   const [walletAddress, setWalletAddress] = useState<string>('')
-  const [merchants, setMerchants] = useState<Merchant[]>([])
+  const [merchants, setMerchants] = useState<OwnedAgent[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [installCopied, setInstallCopied] = useState<boolean>(false)
-  // Per-merchant "is updating" state so we can show a spinner on just the one
-  // the owner is toggling instead of the whole list
-  const [toggling, setToggling] = useState<Record<string, boolean>>({})
-  const [toggleError, setToggleError] = useState<string | null>(null)
-
-  const toggleStatus = async (m: Merchant): Promise<void> => {
-    setToggleError(null)
-    setToggling(prev => ({ ...prev, [m.merchant_id]: true }))
-    const nextStatus = m.status === 'inactive' ? 'active' : 'inactive'
-    try {
-      // ensureToken either returns a cached session token or prompts
-      // MetaMask once for a personal_sign and mints a fresh one.
-      const token = await ensureToken(walletAddress)
-      const res = await fetch(`${API_BASE}/v1/merchants/${encodeURIComponent(m.merchant_id)}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: nextStatus }),
-      })
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const json = await res.json()
-      const updated = json.data as Merchant
-      setMerchants(prev => prev.map(x => x.merchant_id === m.merchant_id ? { ...x, status: updated.status } : x))
-    } catch {
-      setToggleError(t('profile.merchants.toggleError'))
-    } finally {
-      setToggling(prev => ({ ...prev, [m.merchant_id]: false }))
-    }
-  }
 
   // Sync wallet from localStorage + listen for header changes
   useEffect(() => {
@@ -109,23 +79,56 @@ export default function ProfilePage(): React.JSX.Element {
     return () => window.removeEventListener('concourse:wallet-changed', sync)
   }, [])
 
-  // Fetch merchants owned by this wallet
+  // Read agents this wallet owns straight from the chain, then fetch + verify
+  // each one's card for display. No backend, no indexer.
   useEffect(() => {
     if (!walletAddress) {
       setMerchants([])
       return
     }
+    let cancelled = false
     setLoading(true)
-    fetch(`${API_BASE}/v1/discover`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // include_inactive: true → owner sees their paused listings too
-      body: JSON.stringify({ wallet: walletAddress, limit: 100, include_inactive: true }),
-    })
-      .then(r => r.json())
-      .then(d => setMerchants((d.data ?? []) as Merchant[]))
-      .catch(() => setMerchants([]))
-      .finally(() => setLoading(false))
+    getAgentsByOwner(walletAddress)
+      .then(async (agents) => {
+        const active = agents.filter((a) => a.active)
+        const rows = await Promise.all(
+          active.map(async (a): Promise<OwnedAgent> => {
+            try {
+              const { card, hash } = await fetchAndHashCard(a.agentCardURI)
+              const ext = (card.extensions ?? {}) as Record<string, Record<string, unknown>>
+              const i18n = ext['tourskill.org/v1/i18n']
+              const loc = ext['tourskill.org/v1/location']
+              const merch = ext['tourskill.org/v1/merchant']
+              const name = (i18n?.name as { en: string; zh: string } | undefined)
+                ?? { en: card.name, zh: card.name }
+              return {
+                agentId:    a.agentId,
+                name,
+                type:       (merch?.type as string) ?? '',
+                city:       (loc?.city as string) ?? '',
+                skillCount: card.skills?.length ?? 0,
+                cardURI:    a.agentCardURI,
+                verified:   hash.toLowerCase() === a.agentCardHash.toLowerCase(),
+              }
+            } catch {
+              // Card unreachable / unparseable — still show the on-chain entry.
+              return {
+                agentId:    a.agentId,
+                name:       { en: `Agent #${a.agentId}`, zh: `Agent #${a.agentId}` },
+                type:       '',
+                city:       '',
+                skillCount: 0,
+                cardURI:    a.agentCardURI,
+                verified:   false,
+              }
+            }
+          }),
+        )
+        if (!cancelled) setMerchants(rows)
+      })
+      .catch(() => { if (!cancelled) setMerchants([]) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
   }, [walletAddress])
 
   const copyInstall = async () => {
@@ -230,88 +233,48 @@ export default function ProfilePage(): React.JSX.Element {
             </Link>
           </div>
         ) : (
-          <>
-          {toggleError && (
-            <div className="mb-3 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
-              {toggleError}
-            </div>
-          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {merchants.map(m => {
-              const isPaused = m.status === 'inactive'
-              const isToggling = toggling[m.merchant_id]
+              const cityCap = m.city ? m.city.charAt(0).toUpperCase() + m.city.slice(1) : ''
               return (
-                <div
-                  key={m.merchant_id}
-                  className={`group flex items-start gap-3 p-4 rounded-xl border transition-all ${
-                    isPaused
-                      ? 'bg-surface-2/60 border-dashed border-border-strong hover:border-text-muted opacity-80 hover:opacity-100'
-                      : 'bg-surface border-border hover:border-primary/40 hover:bg-white'
-                  }`}
+                <a
+                  key={m.agentId}
+                  href={m.cardURI}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group flex items-start gap-3 p-4 rounded-xl border bg-surface border-border hover:border-primary/40 hover:bg-white transition-all"
                 >
-                  <Link
-                    to={`/merchant/${encodeURIComponent(m.merchant_id)}`}
-                    className="flex items-start gap-3 min-w-0 flex-1"
-                  >
+                  {m.type && (
                     <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase tracking-wider border shrink-0 ${typeBadge(m.type)}`}>
                       {m.type}
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <div className={`text-sm font-semibold truncate transition-colors ${
-                          isPaused ? 'text-text-muted' : 'text-text group-hover:text-primary'
-                        }`}>
-                          {m.name?.[lang as 'en' | 'zh'] || m.name.en}
-                        </div>
-                        <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold border shrink-0 ${
-                          isPaused
-                            ? 'bg-surface-2 text-text-muted border-border-strong'
-                            : 'bg-primary-soft text-primary border-primary/30'
-                        }`}>
-                          {isPaused
-                            ? <><Pause className="w-2.5 h-2.5" strokeWidth={3} /> {t('status.inactive')}</>
-                            : <><CircleDot className="w-2.5 h-2.5" strokeWidth={3} /> {t('status.active')}</>
-                          }
-                        </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="text-sm font-semibold truncate text-text group-hover:text-primary transition-colors">
+                        {m.name?.[lang as 'en' | 'zh'] || m.name.en}
                       </div>
-                      <div className="text-xs text-text-muted truncate mt-0.5">
-                        {m.location.city.charAt(0).toUpperCase() + m.location.city.slice(1)} · {m.skills.length} skills
-                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold border shrink-0 ${
+                          m.verified
+                            ? 'bg-primary-soft text-primary border-primary/30'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}
+                        title={m.verified ? 'SHA-256 matches the on-chain commit' : 'card hash mismatch'}
+                      >
+                        <ShieldCheck className="w-2.5 h-2.5" strokeWidth={3} />
+                        {m.verified ? 'verified' : 'unverified'} · #{m.agentId}
+                      </span>
                     </div>
-                  </Link>
-
-                  {/* Inline Pause / Resume button — one-click status toggle */}
-                  <button
-                    onClick={() => toggleStatus(m)}
-                    disabled={isToggling}
-                    className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all ${
-                      isToggling
-                        ? 'bg-surface-2 text-text-muted cursor-wait'
-                        : isPaused
-                          ? 'bg-primary text-white hover:bg-primary-hover shadow-sm hover:shadow-md'
-                          : 'bg-white text-text border border-border hover:border-red-300 hover:text-red-600 hover:bg-red-50'
-                    }`}
-                    aria-label={isPaused ? t('profile.merchants.resume') : t('profile.merchants.pause')}
-                  >
-                    {isToggling ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : isPaused ? (
-                      <>
-                        <CircleDot className="w-3 h-3" strokeWidth={3} />
-                        {t('profile.merchants.resume')}
-                      </>
-                    ) : (
-                      <>
-                        <Pause className="w-3 h-3" strokeWidth={3} />
-                        {t('profile.merchants.pause')}
-                      </>
-                    )}
-                  </button>
-                </div>
+                    <div className="text-xs text-text-muted truncate mt-0.5">
+                      {cityCap}{cityCap && ' · '}{m.skillCount} skills
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-text-muted/50 group-hover:text-primary shrink-0 mt-0.5" />
+                </a>
               )
             })}
           </div>
-          </>
         )}
       </section>
 
