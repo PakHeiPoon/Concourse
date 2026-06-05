@@ -85,8 +85,10 @@ docs/images/
 # Legacy 0G demo renders (not relevant to current ERC-8004 protocol)
 demos/
 
-# Early 0G experimental agent — superseded by merchant-agent-template
-agent/
+# Early 0G experimental agent — superseded by merchant-agent-template.
+# Anchored to repo root so it does NOT also ignore
+# merchant-agent-template/apps/agent/ (which must be committed/deployed).
+/agent/
 
 # Legacy Hardhat artifacts under contracts/ — superseded by contracts/erc8004/
 contracts/contracts/
@@ -105,3 +107,6 @@ frontend/public/tourskill-logo.png
 *.psd
 *.sketch
 
+*.env.merchants
+# merchant burner wallets — NEVER commit
+.env.merchants
