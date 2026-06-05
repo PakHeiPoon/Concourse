@@ -4,10 +4,9 @@ venv/
 __pycache__/
 *.pyc
 
-# Environment variables (NEVER commit)
+# Environment variables (never commit) — covers .env, .env.local, .env.* etc.
 .env
-.env.local
-.env.*.local
+.env.*
 
 # Build outputs
 dist/
@@ -15,15 +14,12 @@ dist-ssr/
 build/
 *.local
 
-# IDE
+# IDE / editor / OS
 .vscode/
 .idea/
 .trae/
 .DS_Store
-
-# Claude Code project-local overrides (per-developer; team settings live in .claude/settings.json)
 .claude/settings.local.json
-
 *.suo
 *.ntvs*
 *.njsproj
@@ -38,75 +34,25 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Hardhat / Solidity
+# Hardhat / Solidity build caches
 contracts/cache/
 contracts/artifacts/
 
-# Foundry (contracts/erc8004) build + cache + downloaded libs
+# Foundry build + cache + downloaded libs
 contracts/erc8004/out/
 contracts/erc8004/cache/
 contracts/erc8004/broadcast/
 contracts/erc8004/lib/
 
-# merchant-agent-template — runtime artifacts (per-merchant SQLite + node_modules)
+# merchant-agent-template runtime artifacts (SQLite DBs, builds, deps)
 merchant-agent-template/**/node_modules/
 merchant-agent-template/**/dist/
 merchant-agent-template/**/data/*.db
 merchant-agent-template/**/data/*.db-*
-merchant-agent-template/**/.env
 merchant-agent-template/**/coverage/
 
-# Internal-only scripts (contain wallet addresses + seed data, not for public)
-# Note: match files (`/*`) not the directory (`/`) — with `/`, negations inside
-# don't work because git never descends into an ignored directory.
-backend/scripts/*
-# Exception: safe smoke test that hits public endpoints only (no keys, no seed)
-!backend/scripts/e2e_draft_flow.py
-
-# SQL schema (internal Supabase setup, not for public)
-backend/sql/
-
-# Lock files (optional — uncomment if you want to track them)
-# package-lock.json
-
-# Raw design docs (internal only)
-raw/
-
-# ──────────────────────────────────────────────────────────────
-# Internal-only / non-public materials (untracked since 2026-05)
-# ──────────────────────────────────────────────────────────────
-
-# Internal pitch decks, thesis-defense slides, NotebookLM artifacts
-docs/presentation/
-
-# Legacy brand assets (TourSkill → Concourse rebrand left these behind)
-docs/images/
-
-# Legacy 0G demo renders (not relevant to current ERC-8004 protocol)
-demos/
-
-# Early 0G experimental agent — superseded by merchant-agent-template.
-# Anchored to repo root so it does NOT also ignore
-# merchant-agent-template/apps/agent/ (which must be committed/deployed).
-/agent/
-
-# Legacy Hardhat artifacts under contracts/ — superseded by contracts/erc8004/
-contracts/contracts/
-contracts/hardhat.config.js
-contracts/scripts/
-contracts/package.json
-contracts/package-lock.json
-contracts/.env.example
-
-# Old brand logos in frontend
-frontend/public/tourskill-logo.png
-
-# Large binary file types — review before adding back
+# Large binaries — review before adding back
 *.mp4
 *.mov
 *.psd
 *.sketch
-
-*.env.merchants
-# merchant burner wallets — NEVER commit
-.env.merchants
