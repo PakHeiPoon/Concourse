@@ -15,6 +15,7 @@ import {
   fetchAndHashCard, BASE_SEPOLIA, IDENTITY_REGISTRY_ADDRESS,
   type OnChainAgent, type FetchedCard, type AgentCardSkill,
 } from '../lib/erc8004'
+import { postWithX402, skillIsPaid, skillPriceLabel, type X402Outcome } from '../lib/x402'
 
 function short(addr: string, n = 4): string {
   return addr.length > 2 * n + 4
@@ -40,23 +41,25 @@ function SkillRunner({ agentUrl, skill, onClose }: SkillRunnerProps) {
   const [result,  setResult]  = useState<string>('')
   const [running, setRunning] = useState<boolean>(false)
   const [error,   setError]   = useState<string | null>(null)
+  const [settlement, setSettlement] = useState<X402Outcome['settlement']>(null)
+
+  const paid = skillIsPaid(skill as { pricing?: Record<string, unknown> })
 
   async function run(): Promise<void> {
-    setRunning(true); setError(null); setResult('')
+    setRunning(true); setError(null); setResult(''); setSettlement(null)
     try {
       let parsed: unknown = {}
       try { parsed = body.trim() ? JSON.parse(body) : {} }
       catch { throw new Error('invalid JSON body') }
       const url = agentUrl + skill.endpoint
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+      const headers: Record<string, string> = {}
       if (skill.idempotencyKey === 'required') {
         headers['Idempotency-Key'] = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
       }
-      const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(parsed) })
-      const text = await res.text()
-      let pretty = text
-      try { pretty = JSON.stringify(JSON.parse(text), null, 2) } catch { /* keep raw */ }
-      setResult(`HTTP ${res.status}\n\n${pretty}`)
+      // postWithX402 pays via MetaMask + EIP-3009 only if the skill answers 402.
+      const out = await postWithX402(url, parsed, headers)
+      setResult(`HTTP ${out.status}\n\n${out.body}`)
+      setSettlement(out.settlement)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -92,19 +95,43 @@ function SkillRunner({ agentUrl, skill, onClose }: SkillRunnerProps) {
             </div>
           )}
 
+          {paid && (
+            <div className="mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2">
+              💰 Paid skill — <strong>{skillPriceLabel(skill as { pricing?: Record<string, unknown> })}</strong> via x402.
+              MetaMask will prompt you to sign an EIP-3009 USDC authorization; the merchant settles it on-chain before answering.
+            </div>
+          )}
+
           <button
             onClick={run}
             disabled={running}
             className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white text-sm font-medium rounded-lg transition-colors"
           >
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            {running ? 'Calling…' : 'Send'}
+            {running
+              ? (paid ? 'Awaiting payment…' : 'Calling…')
+              : (paid ? `Pay ${skillPriceLabel(skill as { pricing?: Record<string, unknown> })} & Send` : 'Send')}
           </button>
 
           {error && (
             <div className="mt-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded px-3 py-2">
               {error}
             </div>
+          )}
+
+          {settlement && (
+            <a
+              href={`${BASE_SEPOLIA.explorerUrl}/tx/${settlement.txHash}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded px-3 py-2 hover:bg-emerald-100 transition-colors"
+            >
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>
+                Settled on-chain · {(Number(settlement.amount) / 1e6).toFixed(2)} USDC paid · tx {short(settlement.txHash, 6)}
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 ml-auto shrink-0" />
+            </a>
           )}
 
           {result && (
@@ -239,16 +266,24 @@ function AgentDetailModal({ agent, onClose }: AgentDetailModalProps) {
                 Skills ({fetched.card.skills.length}) — calls go straight to the agent URL
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {fetched.card.skills.map((s) => (
+                {fetched.card.skills.map((s) => {
+                  const sPaid = skillIsPaid(s as { pricing?: Record<string, unknown> })
+                  return (
                   <button key={s.name}
                           onClick={() => setSkill(s)}
                           className="text-left p-3 border border-slate-200 hover:border-teal-400 hover:bg-teal-50/40 rounded-lg transition-colors">
                     <div className="font-mono text-sm font-semibold text-slate-900 flex items-center gap-1.5">
                       <Play className="w-3.5 h-3.5 text-teal-600" /> {s.name}
+                      {sPaid && (
+                        <span className="ml-auto text-[10px] font-sans font-bold text-amber-700 bg-amber-100 border border-amber-200 rounded px-1.5 py-0.5">
+                          💰 {skillPriceLabel(s as { pricing?: Record<string, unknown> })}
+                        </span>
+                      )}
                     </div>
                     <div className="text-xs text-slate-600 mt-1 line-clamp-2">{s.description}</div>
                   </button>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
