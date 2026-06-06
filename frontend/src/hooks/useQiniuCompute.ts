@@ -16,7 +16,7 @@ import {
   type ToolLogEntry,
   SYSTEM_PROMPT,
   TOOL_DEFINITIONS,
-  executeMcpTool,
+  executeAgentTool,
 } from './agentTools'
 
 const QINIU_BASE = 'https://api.qnaigc.com/v1'
@@ -221,7 +221,7 @@ export function useQiniuCompute() {
               time: new Date().toISOString(),
             })
 
-            const result = await executeMcpTool(fn.name, args)
+            const result = await executeAgentTool(fn.name, args)
 
             onToolLog({
               type: 'tool_result',
