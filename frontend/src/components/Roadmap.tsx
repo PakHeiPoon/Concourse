@@ -31,6 +31,16 @@ const ITEMS: RoadmapItem[] = [
     title: 'Trustless discovery in /explorer',
     detail: 'This page reads IdentityRegistry directly via ethers v6 — no backend proxy. Each agent fetches its own card, browser computes SHA-256, compares with on-chain commit, then calls skills against the agent URL.',
   },
+  {
+    status: 'live',
+    title: 'x402 paid-skill micropayments',
+    detail: 'Live end-to-end: per-call USDC settlement via EIP-3009 transferWithAuthorization on both the merchant template (core/x402) and /explorer. Paid skills — create_booking, concierge — charge in USDC using the standard Coinbase x402 handshake. Separate from booking-level settlement.',
+  },
+  {
+    status: 'live',
+    title: 'Frontend rewired to Base',
+    detail: '/merchant/sign writes to Base IdentityRegistry via MetaMask; Profile, Explorer, and skill execution all read live on-chain truth. The legacy 0G seed grid is retired — kept only as a clearly-labelled visual demo.',
+  },
 
   // ─── Building ───
   {
@@ -43,18 +53,8 @@ const ITEMS: RoadmapItem[] = [
     title: 'MCP server route on agent',
     detail: 'Same business logic, second wire format. Any MCP client (Claude Desktop, custom agents) can list and invoke skills as native tools alongside the existing REST surface.',
   },
-  {
-    status: 'building',
-    title: 'Frontend full rewire to Base',
-    detail: 'Retire the legacy 0G demo grid. /merchant/sign writes to Base IdentityRegistry via MetaMask. Profile pages, Explorer, and skill execution all read live on-chain truth.',
-  },
 
   // ─── Planned ───
-  {
-    status: 'planned',
-    title: 'x402 paid-skill micropayments',
-    detail: 'Stateless per-call USDC payments via EIP-3009 transferWithAuthorization — the standard Coinbase x402 handshake, used as Coinbase published it. Separate from booking-level settlement.',
-  },
   {
     status: 'planned',
     title: 'BookingEscrow + ReputationRegistry',
