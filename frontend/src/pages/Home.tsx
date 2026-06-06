@@ -16,8 +16,8 @@ import TeaserVideo from '../components/TeaserVideo'
 import { useT } from '../i18n'
 
 const SKILL_URLS = {
-  personal: 'https://api.concourse.paking.xyz/skills/user-client/SKILL.md',
-  merchant: 'https://api.concourse.paking.xyz/skills/merchant-client/SKILL.md',
+  personal: 'https://concourse.paking.xyz/skills/user-client/SKILL.md',
+  merchant: 'https://concourse.paking.xyz/skills/merchant-client/SKILL.md',
 } as const
 
 type AgentKind = keyof typeof SKILL_URLS

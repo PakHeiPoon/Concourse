@@ -20,8 +20,8 @@ const CHAINSCAN_ADDRESS = 'https://sepolia.basescan.org/address'
 const CHAIN_ID = 84532
 const CHAIN_NAME = 'Base Sepolia'
 
-const INSTALL_PROMPT = 'Install the Concourse skill from https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
-const SKILL_URL = 'https://api.concourse.paking.xyz/skills/user-client/SKILL.md'
+const INSTALL_PROMPT = 'Install the Concourse skill from https://concourse.paking.xyz/skills/user-client/SKILL.md'
+const SKILL_URL = 'https://concourse.paking.xyz/skills/user-client/SKILL.md'
 
 // "My merchants" reads straight from the ERC-8004 IdentityRegistry on Base —
 // whatever this wallet registered on-chain shows up here, with no backend
