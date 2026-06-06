@@ -24,7 +24,15 @@ export default function AgentDemo() {
   // project consolidated onto Base + Qiniu for ETHBeijing).
   const qiniu = useQiniuCompute()
   const active = qiniu
-  const { ready, model, error: computeError, loading: computeLoading, step, chat } = active
+  const { ready, model, error: computeError, loading: computeLoading, step, chat, connectManaged } = active
+
+  // Zero-friction default: auto-connect to our managed DeepSeek v4 Flash on
+  // mount, so visitors can chat immediately without pasting an API key. The
+  // key lives server-side in the /api/agent-chat Edge proxy.
+  useEffect(() => {
+    connectManaged()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Qiniu inputs — persist key + model in sessionStorage so a refresh
   // doesn't ask the visitor to re-paste them, but they vanish on tab close.

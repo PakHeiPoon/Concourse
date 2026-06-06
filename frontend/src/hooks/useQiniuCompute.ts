@@ -66,6 +66,21 @@ export function useQiniuCompute() {
 
   const apiKeyRef = useRef<string>('')
   const modelRef = useRef<string>('')
+  const managedRef = useRef<boolean>(false)
+
+  // Managed mode: no visitor key. Chat is proxied through our Vercel Edge
+  // function (/api/agent-chat), which injects the server-side key + model.
+  const connectManaged = useCallback(
+    (onLog?: (text: string, type: 'info' | 'action' | 'success' | 'error') => void) => {
+      const log = onLog ?? (() => {})
+      managedRef.current = true
+      apiKeyRef.current = ''
+      modelRef.current = 'deepseek-v4-flash'
+      log('Connected · managed DeepSeek v4 Flash (no key needed)', 'success')
+      setState({ ready: true, model: 'deepseek-v4-flash', provider: 'qiniu', error: null, loading: false, step: null })
+    },
+    [],
+  )
 
   const connect = useCallback(
     async (
@@ -109,6 +124,7 @@ export function useQiniuCompute() {
 
         apiKeyRef.current = apiKey
         modelRef.current = modelId
+        managedRef.current = false
 
         log(`Connected to Qiniu AIGC · ${modelId}`, 'success')
 
@@ -134,7 +150,7 @@ export function useQiniuCompute() {
       userMessages: { role: string; content: string }[],
       onToolLog: (entry: ToolLogEntry) => void,
     ): Promise<string> => {
-      if (!apiKeyRef.current) throw new Error('Not connected to Qiniu AIGC')
+      if (!managedRef.current && !apiKeyRef.current) throw new Error('Not connected to Qiniu AIGC')
 
       const messages: ChatMessage[] = [
         { role: 'system', content: SYSTEM_PROMPT },
@@ -156,18 +172,21 @@ export function useQiniuCompute() {
           time: new Date().toISOString(),
         })
 
-        const response = await fetch(`${QINIU_BASE}/chat/completions`, {
+        // Managed mode → our Edge proxy (no key, model fixed server-side).
+        // User-key mode → Qiniu directly with the visitor's key + model.
+        const endpoint = managedRef.current ? '/api/agent-chat' : `${QINIU_BASE}/chat/completions`
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (!managedRef.current) headers.Authorization = `Bearer ${apiKeyRef.current}`
+        const payload: Record<string, unknown> = {
+          messages,
+          tools: TOOL_DEFINITIONS,
+          tool_choice: 'auto',
+        }
+        if (!managedRef.current) payload.model = modelRef.current
+        const response = await fetch(endpoint, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKeyRef.current}`,
-          },
-          body: JSON.stringify({
-            messages,
-            model: modelRef.current,
-            tools: TOOL_DEFINITIONS,
-            tool_choice: 'auto',
-          }),
+          headers,
+          body: JSON.stringify(payload),
         })
 
         if (!response.ok) {
@@ -230,5 +249,5 @@ export function useQiniuCompute() {
 
   // Mirror the 0G hook's return shape so AgentDemo can use either.
   // `network` is 0G-specific so we always return null.
-  return { ...state, network: null, connect, chat }
+  return { ...state, network: null, connect, connectManaged, chat }
 }
