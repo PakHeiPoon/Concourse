@@ -23,8 +23,8 @@ const ITEMS: RoadmapItem[] = [
   },
   {
     status: 'live',
-    title: 'First live agent — wumingchu (#1)',
-    detail: 'Wuming Chu · Huangshan Hidden Retreat live at wumingchu.concourse.paking.xyz on Fly Tokyo. Registered as agentId 1 on IdentityRegistry, byte-equivalent hash on chain and URL.',
+    title: 'Three live merchant-agents on Base',
+    detail: 'Wuming Chu · Huangshan (#1), Four Seasons · Hangzhou (#3, second owner wallet) and Four Seasons · Guangzhou (#4) — each self-hosted on Fly, registered on IdentityRegistry with a byte-equivalent SHA-256 on chain and URL. Two independent owners across three agents.',
   },
   {
     status: 'live',
@@ -34,7 +34,7 @@ const ITEMS: RoadmapItem[] = [
   {
     status: 'live',
     title: 'x402 paid-skill micropayments',
-    detail: 'Live end-to-end: per-call USDC settlement via EIP-3009 transferWithAuthorization on both the merchant template (core/x402) and /explorer. Paid skills — create_booking, concierge — charge in USDC using the standard Coinbase x402 handshake. Separate from booking-level settlement.',
+    detail: 'Live end-to-end: the paid get_concierge_recommendation skill returns HTTP 402, the browser signs an EIP-3009 transferWithAuthorization via MetaMask, and the merchant self-settles the USDC transfer on Base Sepolia — the standard Coinbase x402 handshake, no facilitator. Booking-level escrow is separate (planned).',
   },
   {
     status: 'live',

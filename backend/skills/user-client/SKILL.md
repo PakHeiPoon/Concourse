@@ -6,7 +6,7 @@ description: |
   merchant's own URL for the agent-card, (3) the same URL's /skills/<name>
   for invocation. Verify integrity with SHA-256 against the on-chain commit.
   Concourse the website can disappear; this skill keeps working.
-version: 0.2.0
+version: 0.3.0
 audience: end-user (booking hotels, restaurants, attractions via AI agent)
 trigger_keywords:
   - book a hotel
@@ -74,7 +74,7 @@ dispensable. That is the entire point of this skill.
 
 ---
 
-## 1. The 4-step protocol (memorize this)
+## 1. The 5-step protocol (memorize this)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -89,10 +89,15 @@ dispensable. That is the entire point of this skill.
 │                                                                          │
 │   ④ INVOKE         POST card.url + skill.endpoint                       │
 │                    direct to merchant, with their auth scheme           │
+│                                                                          │
+│   ⑤ PAY (if 402)   skill returns HTTP 402 → sign EIP-3009 USDC          │
+│                    authorization → resend with X-PAYMENT (x402).        │
+│                    Free skills skip this step.                           │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
 If any step requires a Concourse-operated server, **you are doing it wrong**.
+Step ⑤ settles peer-to-peer in USDC on Base — no platform, no facilitator.
 
 ---
 
@@ -152,6 +157,27 @@ curl -sS -X POST "${BASE_URL}/skills/create_booking" \
   -d '{...}'
 ```
 
+### Recipe D — pay for a 402 skill (x402)
+
+Some skills cost money. The first call returns **HTTP 402** with a
+`PaymentRequirements` body (`scheme:"exact"`, `network`, `maxAmountRequired`,
+`payTo`, `asset` = USDC). Sign an **EIP-3009 `transferWithAuthorization`** for
+that amount (gasless for you), base64-encode the payload into an `X-PAYMENT`
+header, and resend the **same** request. The merchant verifies + settles the
+USDC transfer on-chain, then returns the result plus an `X-PAYMENT-RESPONSE`
+header carrying the settlement tx hash.
+
+```
+1. POST skill            → 402 { accepts: [ { payTo, maxAmountRequired, asset, extra:{name,version} } ] }
+2. sign EIP-3009         domain { name, version, chainId:84532, verifyingContract:USDC }
+                         message { from, to:payTo, value, validAfter:0, validBefore:now+300, nonce }
+3. POST skill + X-PAYMENT(base64 { x402Version, payload:{ signature, authorization } })
+                         → 200 result · X-PAYMENT-RESPONSE: settlement tx
+```
+
+This is the Coinbase x402 handshake, by the spec — the merchant self-settles,
+no facilitator and no Concourse server in the path. USDC moves wallet → wallet.
+
 ---
 
 ## 3. Conversation flow with the user
@@ -167,6 +193,9 @@ When the user says "find me a hotel in Huangshan for 2 nights":
 4. **Present**: include the merchant's owner address and a Basescan link.
 5. **Book (only if user confirms)**: invoke `create_booking` with
    `Idempotency-Key`.
+6. **Pay (if the skill returns 402)**: complete the x402 flow (Recipe D)
+   with the user's wallet. Always show the amount and get confirmation
+   before signing — payment is irreversible.
 
 ### Honest disclosure rules
 
@@ -240,7 +269,7 @@ the protocol's claim is falsified** — file an issue.
 | Card fetch 404 | Merchant server down or URI moved | Skip merchant |
 | `COMPUTED ≠ CHAIN_HASH` | Card update without `update()` on chain, OR MITM | **Refuse to transact**, surface to user |
 | Skill POST `IDEMPOTENCY_KEY_REQUIRED` | State-changing skill, no header | Resend with `Idempotency-Key: <uuid>` |
-| Skill POST 402 | Paid skill, x402 flow required | (out of scope v0.2.0) |
+| Skill POST 402 | Paid skill — complete the x402 flow | sign EIP-3009, resend with X-PAYMENT (Recipe D) |
 
 ---
 
