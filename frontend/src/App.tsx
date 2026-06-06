@@ -108,10 +108,32 @@ function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <div className="flex items-center space-x-10">
-              <Link to="/" className="flex items-center space-x-2 group">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-text font-bold group-hover:scale-105 transition-transform duration-300">
-                  C
-                </div>
+              <Link to="/" className="flex items-center space-x-2.5 group">
+                <svg
+                  viewBox="0 0 40 40"
+                  className="w-10 h-10 group-hover:scale-105 transition-transform duration-300"
+                  aria-label="Concourse"
+                >
+                  <defs>
+                    <linearGradient id="concourse-logo" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                      <stop offset="0" stopColor="#2dd4bf" />
+                      <stop offset="1" stopColor="#0d9488" />
+                    </linearGradient>
+                  </defs>
+                  <rect width="40" height="40" rx="11" fill="url(#concourse-logo)" />
+                  {/* agents converging at a shared node — a "concourse" */}
+                  <g stroke="#ffffff" strokeWidth="2" strokeLinecap="round">
+                    <line x1="20" y1="20" x2="20" y2="10" />
+                    <line x1="20" y1="20" x2="11.7" y2="25.2" />
+                    <line x1="20" y1="20" x2="28.3" y2="25.2" />
+                  </g>
+                  <g fill="#ffffff">
+                    <circle cx="20" cy="10" r="2.6" />
+                    <circle cx="11.7" cy="25.2" r="2.6" />
+                    <circle cx="28.3" cy="25.2" r="2.6" />
+                    <circle cx="20" cy="20" r="3.7" />
+                  </g>
+                </svg>
                 <span className="text-xl font-bold tracking-tight text-text">
                   Concourse
                 </span>
