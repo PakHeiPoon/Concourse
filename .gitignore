@@ -56,3 +56,5 @@ merchant-agent-template/**/coverage/
 *.mov
 *.psd
 *.sketch
+# ...exception: the homepage teaser is a small (~3MB) asset that ships with the frontend
+!frontend/public/concourse-teaser.mp4

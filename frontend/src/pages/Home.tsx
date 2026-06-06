@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import AgentLoopDemo from '../components/AgentLoopDemo'
 import Roadmap from '../components/Roadmap'
+import TeaserVideo from '../components/TeaserVideo'
 import { useT } from '../i18n'
 
 const SKILL_URLS = {
@@ -91,6 +92,11 @@ export default function Home(): React.JSX.Element {
           <span>{t('home.cta.agent')}</span>
           {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4 text-text-muted" />}
         </button>
+      </div>
+
+      {/* Teaser — silent auto-looping showcase */}
+      <div className="w-full mb-12">
+        <TeaserVideo />
       </div>
 
       {/* Install card — lights up when audience === 'agent' */}

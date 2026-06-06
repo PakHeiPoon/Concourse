@@ -37,6 +37,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'home.cta.agent': "I'm an Agent",
     'home.cta.noAgent.before': "Don't have an AI agent? ",
     'home.cta.noAgent.link': 'Try the web demo',
+    'home.teaser.title': 'See it in 40 seconds',
 
     // ─── Home: install card ───
     'home.install.tab.personal': 'Personal Agent',
@@ -337,6 +338,7 @@ const TRANSLATIONS: Record<Lang, Record<string, string>> = {
     'home.cta.agent': '我是 Agent',
     'home.cta.noAgent.before': '没有 AI agent？',
     'home.cta.noAgent.link': '试用网页版演示',
+    'home.teaser.title': '40 秒看懂',
 
     // ─── Home: install card ───
     'home.install.tab.personal': '个人 Agent',
