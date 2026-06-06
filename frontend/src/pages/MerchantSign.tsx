@@ -15,7 +15,7 @@ import {
 import { useT } from '../i18n'
 import { mintToken } from '../lib/auth'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
 type DraftPayload = {
   merchant_type: string

@@ -5,7 +5,7 @@ import OnChainBadge from '../components/OnChainBadge'
 import BaseAgentPanel from '../components/BaseAgentPanel'
 import { useT } from '../i18n'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 
 const SKILL_PARAMS: Record<string, { label: string; fields: { name: string; type: string; placeholder: string; required?: boolean }[] }> = {
   check_availability: { label: 'Check Availability', fields: [

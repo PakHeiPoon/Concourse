@@ -19,7 +19,7 @@ import {
   CircleDot,
 } from 'lucide-react'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.concourse.paking.xyz'
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.tourskill.paking.xyz'
 const REGISTRY_CONTRACT = '0xBdE5A55D50d2062FF5529546d8c391f6a6eEA29f'
 const CHAINSCAN_ADDRESS = 'https://sepolia.basescan.org/address'
 const CHAINSCAN_TX = 'https://sepolia.basescan.org/tx'
