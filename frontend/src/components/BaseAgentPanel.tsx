@@ -68,8 +68,8 @@ function SkillRunner({ agentUrl, skill, onClose }: SkillRunnerProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
+    <div onClick={onClose} className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
         <div className="flex items-start justify-between p-5 border-b border-slate-200">
           <div>
             <div className="text-xs uppercase tracking-[0.18em] text-slate-500">POST</div>
@@ -188,8 +188,8 @@ function AgentDetailModal({ agent, onClose }: AgentDetailModalProps) {
   const matches = fetched && fetched.hash.toLowerCase() === agent.agentCardHash.toLowerCase()
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div onClick={onClose} className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* header */}
         <div className="flex items-start justify-between p-6 border-b border-slate-200">
           <div>
